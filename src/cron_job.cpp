@@ -5,7 +5,7 @@
 void CronJobsHandle()
 {
     RtcDateTime now = Rtc.GetDateTime();
-    uint32_t nowEpochTime = now.Epoch32Time();
+    const uint32_t nowEpochTime = now.Epoch32Time();
     JsonArray cron_jobs = SystemConfig["cron_jobs"];
     int jobs_size = cron_jobs.size();
     // Serial.printf("定时任务处理: %d个\n",jobs_size);
