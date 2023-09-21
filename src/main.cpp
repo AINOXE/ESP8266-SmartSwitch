@@ -37,21 +37,5 @@ void loop()
 {
     WebServer.handleClient();
     PeripheralDevices_GetDataLoop();
-    RtcDateTime now = Rtc.GetDateTime();
-    uint64_t epochTime = now.Epoch32Time();
-    /*
-    {
-        "name": "关灯",
-        "time": 946684800,
-        // mode:0 -> epochTime
-        // mode:1 -> [0][12][45]
-        "target":1,
-        "value":"打开",
-        "exec": 0
-    }
-    */
-    // 02302
-    now.Epoch64Time();
-    now.Hour();
     delay(1);
 }
