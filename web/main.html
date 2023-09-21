@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能开关</title>
+  <link href="./bootstrap.css" rel="stylesheet">
+  <script>
+    function loadError() {
+      location.reload();
+    }
+  </script>
+  <link onerror="loadError()" href="./bootstrap.min.css.gz" rel="stylesheet">
+
+
+  <style>
+    input[type="range"]::-webkit-slider-runnable-track {
+      background: #ded7d7;
+    }
+  </style>
+</head>
+
+<body style="background-color: #e9ecef;">
+  <header>
+    <div class="collapse bg-dark" id="navbarHeader">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-4 offset-md-1 py-4">
+            <h4 class="text-white" data-bs-toggle="modal" data-bs-target="#NetSetting">网络设置</h4>
+            <h4 class="text-white">关于</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="navbar navbar-dark bg-dark shadow-sm">
+      <div class="container">
+        <a href="#" class="navbar-brand d-flex align-items-center">
+          <svg style="width: 30px;height: 30px;" t="1695081250222" class="icon" viewBox="0 0 1024 1024" version="1.1"
+            xmlns="http://www.w3.org/2000/svg" p-id="4984">
+            <path
+              d="M515.674692 636.784005c43.485771 0 78.723645-33.797948 78.723645-75.463652L594.398337 75.50845C594.397057 33.797948 559.160463 0 515.674692 0s-78.723645 33.797948-78.723645 75.50845l0 485.810622C436.951046 602.986057 472.18764 636.784005 515.674692 636.784005z"
+              fill="#ffffff" p-id="4985"></path>
+            <path
+              d="M836.09091 214.232861c-32.420738-27.756657-82.188428-25.064955-111.132864 6.064329-28.939317 31.096006-26.100422 78.814521 6.336955 106.571178 67.077522 57.56633 109.045291 140.413924 109.07345 233.376839-0.307184 172.715628-146.017477 312.470386-326.088888 312.748132-180.066292-0.279026-325.798343-140.032503-326.083768-312.748132 0.023039-93.400653 42.382468-176.550312 109.995003-234.1384 32.552572-27.631224 35.543778-75.366377 6.729895-106.54174-28.843322-31.20992-78.563654-34.098732-111.093186-6.44575l-0.023039-0.039678C94.011822 297.780579 30.716506 422.260599 30.744664 560.245207 30.790742 816.406159 247.21357 1023.960322 514.280843 1024c267.060873-0.039678 483.484981-207.595121 483.524659-463.754793C997.832381 422.857049 935.134794 298.862123 836.09091 214.232861z"
+              fill="#ffffff" p-id="4986"></path>
+          </svg>
+          <strong>&nbsp;智能开关</strong>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarHeader"
+          aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container pt-3 d-grid gap-2 col-md-8 col-lg-6 col-sm-12 mx-auto">
+      <div id="v_state" style="height: 62px;" class="alert alert-dark h4 text-center m-0 d-flex justify-content-center"
+        role="alert">
+        初 始 化 中
+      </div>
+      <div class="row mt-0 g-2">
+        <div class="col-md-6 col-sm-12">
+          <div class="card h-100">
+            <div class="card-header"><span id="v_sw1_name">开关1</span> (L1)</div>
+            <div class="card-body row">
+              <label style="width: 65px;" id="v_sw1_value" for="in_sw1"
+                class="p-0 ps-3 col-auto form-label">0.0%</label>
+              <input id="in_sw1" value="0" min="0" max="1023" onchange="MosSwitchOnChange(this)"
+                class="col form-range ms-2 me-4" type="range" form-range-track-bg="red">
+              <div class="btn-group" role="group" aria-label="Basic outlined example">
+                <button onclick="SwitchControl(1,0)" type="button" class="btn btn-outline-primary">最小</button>
+                <button onclick="SwitchControl(1,511)" type="button" class="btn btn-outline-primary">中等</button>
+                <button onclick="SwitchControl(1,1023)" type="button" class="btn btn-outline-primary">最大</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-sm-12">
+          <div class="card h-100">
+            <div class="card-header"><span id="v_sw2_name">开关2</span> (L2)</div>
+            <div class="card-body row">
+              <label style="width: 65px;" id="v_sw2_value" for="in_sw2"
+                class="p-0 ps-3 col-auto form-label">0.0%</label>
+              <input id="in_sw2" value="0" min="0" max="1023" onchange="MosSwitchOnChange(this)"
+                class="col form-range ms-2 me-4" type="range" form-range-track-bg="red">
+              <div class="btn-group" role="group" aria-label="Basic outlined example">
+                <button onclick="SwitchControl(2,0)" type="button" class="btn btn-outline-primary">最小</button>
+                <button onclick="SwitchControl(2,511)" type="button" class="btn btn-outline-primary">中等</button>
+                <button onclick="SwitchControl(2,1023)" type="button" class="btn btn-outline-primary">最大</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="card h-100">
+            <div class="card-header"><span id="v_sw3_name">开关3</span> (L3)</div>
+            <div class="card-body h5 row d-flex align-items-center">
+
+              <div class="btn-group col text-center" role="group" aria-label="Vertical radio toggle button group">
+                <input type="radio" class="btn-check" name="l3-radio" id="btn_sw3_on" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btn_sw3_on">开</label>
+                <input type="radio" class="btn-check" name="l3-radio" id="btn_sw3_off" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="btn_sw3_off">关</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="card h-100">
+            <div class="card-header"><span id="v_sw4_name">开关4</span> (L4)</div>
+            <div class="card-body h5 row d-flex align-items-center">
+
+              <div class="btn-group col text-center" role="group" aria-label="Vertical radio toggle button group">
+                <input type="radio" class="btn-check" name="l4-radio" id="btn_sw4_on" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btn_sw4_on">开</label>
+                <input type="radio" class="btn-check" name="l4-radio" id="btn_sw4_off" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="btn_sw4_off">关</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion mt-2 mb-3" id="AppAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="AppAccordion-PeriodicTaskManageHead">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#AppAccordion-PeriodicTaskManage" aria-expanded="false"
+              aria-controls="AppAccordion-PeriodicTaskManage">
+              定时任务管理
+            </button>
+          </h2>
+          <div id="AppAccordion-PeriodicTaskManage" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
+            <div class="accordion-body">
+              <div class="row">
+                <button class="col-auto m-2 btn btn-outline-info">刷新</button>
+                <button class="col-auto m-2 btn btn-outline-danger">全部删除</button>
+                <button class="col-auto m-2 btn btn-outline-primary" data-bs-toggle="modal"
+                  data-bs-target="#OneTimeTaskEditModal">单次任务添加</button>
+                <button class="col-auto m-2 btn btn-outline-primary" data-bs-toggle="modal"
+                  data-bs-target="#PeriodicTaskEditModal">周期任务添加</button>
+              </div>
+              <ol class="list-group list-group-numbered ">
+                <li
+                  class="list-group-item-action list-group-item d-flex justify-content-between align-items-start mt-2">
+                  <div class="ms-2 me-auto">
+                    <div class="fw-bold">关灯任务</div>
+                    灯泡 在 每天 21:30 关闭
+                  </div>
+                  <span class="badge bg-primary rounded-pill">L1</span>
+                </li>
+                <li class="list-group-item-action list-group-item d-flex justify-content-between align-items-start">
+                  <div class="ms-2 me-auto">
+                    <div class="fw-bold">开灯任务</div>
+                    灯泡 在 每天 19:15 打开
+                  </div>
+                  <span class="badge bg-primary rounded-pill">L1</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="AppAccordion-TriggerSettingHead">
+            <button onclick="LoadTriggersInfo()" class="accordion-button collapsed" type="button"
+              data-bs-toggle="collapse" data-bs-target="#AppAccordion-TriggerSetting" aria-expanded="false"
+              aria-controls="AppAccordion-TriggerSetting">
+              触发器设置
+            </button>
+          </h2>
+          <div id="AppAccordion-TriggerSetting" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
+            <div class="accordion-body m-0">
+              <div class="trigger_template card mt-2">
+                <h5 class="card-header trigger-name">触发器1 (T1)</h5>
+                <div class="card-body">
+                  <div class="row  m-0 mt-2 d-flex align-items-center">
+                    <label class="ps-0 col-auto">触发器名:</label>
+                    <input class="in-trigger-name col form-control" />
+                  </div>
+                  <div class="row  m-0 mt-2 d-flex align-items-center">
+                    <label class="ps-0 col-auto">触发方式:</label>
+                    <select class="in-trigger-mode col form-select">
+                      <option value="0">低电平触发</option>
+                      <option value="1">高电平触发</option>
+                      <option value="2">低电平上升触发</option>
+                      <option value="3">高电平下降触发</option>
+                    </select>
+                  </div>
+                  <div class="row  m-0 mt-2 d-flex align-items-center">
+                    <label class="ps-0 col-auto">控制目标:</label>
+                    <select class="in-trigger-target col form-select">
+                      <option value="1">L1</option>
+                      <option value="2">L2</option>
+                      <option value="3">L3</option>
+                      <option value="4">L4</option>
+                    </select>
+                  </div>
+                  <div class="row  m-0 mt-2 d-flex align-items-center">
+                    <label class="ps-0 col-auto">执行动作:</label>
+                    <input class="in-trigger-action col form-control" list="datalistOptions1" id="exampleDataList">
+                    <datalist id="datalistOptions1">
+                      <option value="打开">
+                      <option value="关闭">
+                      <option value="反转">
+                      <option value="无">
+                    </datalist>
+                  </div>
+                  <div class="row  m-0 mt-2 d-flex align-items-center">
+                    <label class="ps-0 col-auto">否则执行:</label>
+                    <input class="in-trigger-false-action col form-control" list="datalistOptions1"
+                      id="exampleDataList">
+                  </div>
+                  <div class="row  m-0 mt-2 d-flex justify-content-end">
+                    <button onclick="LoadTriggersInfo(true)" class="col-auto btn btn-primary me-2">加载</button>
+                    <button onclick="TriggerConfig_Save(this)" class="col-auto btn btn-success">保存</button>
+                  </div>
+                </div>
+              </div>
+              <!-- 触发器 2，3 生成 -->
+              <script>
+                let trigger_template = document.getElementsByClassName("trigger_template")[0];
+                trigger_template.getElementsByClassName("card-header")[0].trigger_id = 1;
+                let t2 = trigger_template.cloneNode(true);
+                t2.getElementsByClassName("card-header")[0].trigger_id = 2;
+                t2.getElementsByClassName("card-header")[0].innerText = "触发器2 (T2)";
+                trigger_template.parentElement.appendChild(t2);
+                let t3 = trigger_template.cloneNode(true);
+                t3.getElementsByClassName("card-header")[0].trigger_id = 3;
+                t3.getElementsByClassName("card-header")[0].innerText = "触发器3 (T3)";
+                trigger_template.parentElement.appendChild(t3);
+              </script>
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="AppAccordion-ChannelNameSettingHead">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+              data-bs-target="#AppAccordion-ChannelNameSetting" aria-expanded="false"
+              aria-controls="AppAccordion-ChannelNameSetting">
+              开关名称设置
+            </button>
+          </h2>
+          <div id="AppAccordion-ChannelNameSetting" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
+            <div class="accordion-body">
+              <div class="row m-0 mt-2 d-flex align-items-center">
+                <label for="in_sw1_name" class="ps-0 col-auto">开关1:</label>
+                <input id="in_sw1_name" class="col form-control" type="text">
+              </div>
+              <div class="row m-0 mt-2 d-flex align-items-center">
+                <label for="in_sw2_name" class="ps-0 col-auto">开关2:</label>
+                <input id="in_sw2_name" class="col form-control" type="text">
+              </div>
+              <div class="row m-0 mt-2 d-flex align-items-center">
+                <label for="in_sw3_name" class="ps-0 col-auto">开关3:</label>
+                <input id="in_sw3_name" class="col form-control" type="text">
+              </div>
+              <div class="row m-0 mt-2 d-flex align-items-center">
+                <label for="in_sw4_name" class="ps-0 col-auto">开关4:</label>
+                <input id="in_sw4_name" class="col form-control" type="text">
+              </div>
+              <div class="row  m-0 mt-2 d-flex justify-content-end">
+                <button id="btn_switchs_name_get" class="col-auto btn btn-primary me-2">获取</button>
+                <button id="btn_switchs_name_save" class="col-auto btn btn-success">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  <script src="./bootstrap.bundle.js"></script>
+  <script src="./bootstrap.bundle.min.js.gz"></script>
+
+
+
+  <!-- 一次性任务编辑 -->
+  <div id="OneTimeTaskEditModal" tabindex="-1" class="modal fade" style="background-color: #F4F6FA"
+    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="TaskEditModalTitle" class="modal-title">一次性任务添加</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body m-2">
+          <div class="row d-flex align-items-center">
+            <label class="col-auto">名称:</label>
+            <input class="col form-control" type="text" />
+          </div>
+          <div class="row d-flex align-items-center mt-2">
+            <label class="col-auto">日期:</label>
+            <input class="col form-control" type="date" />
+          </div>
+          <div class="row d-flex align-items-center mt-2">
+            <label class="col-auto">时间:</label>
+            <input class="col form-control" type="time" />
+          </div>
+
+          <div class="row d-flex align-items-center mt-2">
+            <label class="col-auto">目标:</label>
+            <select class="col form-select">
+              <option value="1">L1</option>
+              <option value="2">L2</option>
+              <option value="3">L3</option>
+              <option value="4">L4</option>
+            </select>
+          </div>
+          <div class="row d-flex align-items-center mt-2">
+            <label class="col-auto">动作:</label>
+            <input class="col form-control" list="datalistOptions" id="exampleDataList" placeholder="自定义数值或选择">
+            <datalist id="datalistOptions">
+              <option value="打开">
+              <option value="关闭">
+            </datalist>
+          </div>
+
+          <div class="text-end mt-3">
+            <button onclick="" class="btn btn-primary me-2">取消</button>
+            <button onclick="" class="btn btn-success">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script defer="defer">
+
+    </script>
+  </div>
+  <!-- 周期任务编辑 -->
+  <div id="PeriodicTaskEditModal" tabindex="-1" class="modal fade" style="background-color: #F4F6FA"
+    data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="TaskEditModalTitle" class="modal-title">周期任务添加</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body m-2">
+          <div class="row d-flex align-items-center">
+            <label class="col-auto">名称:</label>
+            <input class="col form-control" type="text" />
+          </div>
+
+          <div class="row d-flex align-items-center mt-2">
+            <div class="col-auto">日期:</div>
+            <select class="col form-select">
+              <option value="0">每日</option>
+              <option value="1">周一</option>
+              <option value="2">周二</option>
+              <option value="3">周三</option>
+              <option value="4">周四</option>
+              <option value="5">周五</option>
+              <option value="6">周六</option>
+              <option value="7">周日</option>
+            </select>
+          </div>
+          <div class="row d-flex align-items-center mt-2">
+            <label class="col-auto">时间:</label>
+            <input class="col form-control" type="time" />
+          </div>
+
+          <div class="row d-flex align-items-center mt-2">
+            <label class="col-auto">目标:</label>
+            <select class="col form-select">
+              <option value="1">L1</option>
+              <option value="2">L2</option>
+              <option value="3">L3</option>
+              <option value="4">L4</option>
+            </select>
+          </div>
+          <div class="row d-flex align-items-center mt-2">
+            <label class="col-auto">动作:</label>
+            <input class="col form-control" list="datalistOptions" id="exampleDataList" placeholder="自定义数值或选择">
+            <datalist id="datalistOptions">
+              <option value="打开">
+              <option value="关闭">
+            </datalist>
+          </div>
+
+          <div class="text-end mt-3">
+            <button onclick="wifiScan()" class="btn btn-primary me-2">取消</button>
+            <button onclick="wifiConnect()" class="btn btn-success">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script defer="defer">
+
+    </script>
+  </div>
+  <!-- NetSetting -->
+  <div id="NetSetting" tabindex="-1" class="modal fade" style="background-color: #F4F6FA" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="visitorAuthModalTitle" class="modal-title">网络设置</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="accordion-body">
+            <div class="h5">无线连接</div>
+            <div class="mb-3 row">
+              <label for="in_wifi_ssid" class="col-auto col-form-label">WIFI 名称</label>
+              <div class="col">
+                <select id="sel_wifi_ssid" class="form-select">
+                </select>
+              </div>
+            </div>
+            <div class="mb-3 row">
+              <label for="in_wifi_pwd" class="col-auto col-form-label">WIFI 密码</label>
+              <div class="col">
+                <input type="password" class="form-control" id="in_wifi_pwd">
+              </div>
+            </div>
+
+            <div class="text-end">
+              <button onclick="wifiScan()" class="btn btn-primary ms-2 me-2">扫描</button>
+              <button onclick="wifiConnect()" class="btn btn-success ms-2 me-2">连接</button>
+            </div>
+          </div>
+          <div class="h5">静态IP设置</div>
+          <div class="mb-3 row">
+            <label for="in_wifi_sta_ip" class="col-auto col-form-label">系统地址</label>
+            <div class="col">
+              <input type="text" class="form-control" id="in_wifi_sta_ip">
+            </div>
+          </div>
+          <div class="mb-3 row">
+            <label for="in_wifi_sta_mask" class="col-auto col-form-label">子网掩码</label>
+            <div class="col">
+              <input type="text" class="form-control" id="in_wifi_sta_mask">
+            </div>
+          </div>
+          <div class="mb-3 row">
+            <label for="in_wifi_sta_gt" class="col-auto col-form-label">网关地址</label>
+            <div class="col">
+              <input type="text" class="form-control" id="in_wifi_sta_gt">
+            </div>
+          </div>
+          <div class="text-end">
+            <button onclick="showWifiIpInfo()" class="btn btn-primary ms-2 me-2">获取当前IP</button>
+            <button onclick="setWiFiStaticIp()" class="btn btn-success ms-2 me-2">设置</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script defer="defer">
+      let sel_wifi_ssid = document.getElementById("sel_wifi_ssid");
+      let in_wifi_pwd = document.getElementById("in_wifi_pwd");
+
+      let in_wifi_sta_ip = document.getElementById("in_wifi_sta_ip");
+      let in_wifi_sta_mask = document.getElementById("in_wifi_sta_mask");
+      let in_wifi_sta_gt = document.getElementById("in_wifi_sta_gt");
+
+      function wifiConnect() {
+        if (sel_wifi_ssid.selectedIndex == -1) {
+          MsgBoxShow("WiFi连接", "请扫描后选择WiFi!");
+          return;
+        }
+        let ssid = sel_wifi_ssid.options[sel_wifi_ssid.selectedIndex].innerText;
+        if (ssid === "" || ssid === null) {
+          MsgBoxShow("WiFi连接", "请扫描后选择WiFi!");
+          return;
+        }
+        MsgBoxShowLoading("WiFi连接", "正在连接中，请稍后...");
+        fetch("/api/wifi/connect" +
+          "?ssid=" + ssid +
+          "&password=" + in_wifi_pwd.value, { method: "get" })
+          .then(resp => resp.json())
+          .then(data => {
+            if (data.code !== 0) {
+              MsgBoxShowLoadingResult("连接失败！" + data.msg);
+              return;
+            }
+            MsgBoxShowLoadingResult("连接成功！");
+          })
+          .catch(ex => {
+            MsgBoxShowLoadingResult("网络已断开！");
+          })
+      }
+      function wifiScan() {
+        MsgBoxShowLoading("WiFi扫描", "正在扫描中，请稍后...");
+        fetch("/api/wifi/scan", {
+          method: "get"
+        })
+          .then(resp => resp.json())
+          .then(data => {
+            if (data.length == 0) {
+              MsgBoxShowLoadingResult("扫描结束,附近没有WiFi!");
+            } else {
+              MsgBoxClose();
+            }
+            sel_wifi_ssid.innerHTML = "";
+            data.forEach(item => {
+              sel_wifi_ssid.innerHTML += "<option>" + item.ssid + "</option>";
+            });
+          }).catch(ex => {
+            MsgBoxShowLoadingResult("扫描失败，请检查网络是否通畅!");
+          })
+      }
+      function showWifiIpInfo() {
+        MsgBoxShowLoading("获取WiFi IP信息", "正在获取中...");
+        fetch("/api/wifi/get-ip-info", { method: "get" })
+          .then(resp => resp.json())
+          .then(data => {
+            MsgBoxShowLoadingResult("获取成功!");
+            in_wifi_sta_ip.value = data.ip;
+            in_wifi_sta_mask.value = data.netmask;
+            in_wifi_sta_gt.value = data.gateway;
+          }).catch(ex => {
+            MsgBoxShowLoadingResult("获取失败，请检查网络!" + ex.message);
+          })
+      }
+      function setWiFiStaticIp() {
+        if (!(isValidIP(in_wifi_sta_ip.value)
+          && isValidIP(in_wifi_sta_mask.value)
+          && isValidIP(in_wifi_sta_gt.value))) {
+          MsgBoxShow("设置WiFi静态IP", "请检查IP地址!");
+          return;
+        }
+        MsgBoxShowLoading("设置WiFi静态IP", "静态IP设置中...");
+        fetch("/api/wifi/set-static-ip" +
+          "?ip=" + in_wifi_sta_ip.value +
+          "&netmask=" + in_wifi_sta_mask.value +
+          "&gateway=" + in_wifi_sta_gt.value, { method: "get" })
+          .then(resp => resp.json())
+          .then(data => {
+            MsgBoxShowLoadingResult("设置成功!");
+          }).catch(ex => {
+            MsgBoxShowLoadingResult("设置失败,请检查网络!" + ex.message);
+          })
+      }
+      function isValidIP(ip) {
+        var reg = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/
+        return reg.test(ip);
+      }
+
+    </script>
+  </div>
+  <!-- MsgModal -->
+  <!-- 一定要放在最下面 -->
+  <div id="MsgModal" class="modal fade" style="background-color: #F4F6FA" data-bs-backdrop="static"
+    data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="MsgModalTitle" class="modal-title">正在请求中</h5>
+
+        </div>
+        <div class="modal-body">
+          <p id="MsgModalTip" class="d-flex align-items-center">.......................</p>
+        </div>
+        <div class="modal-footer">
+          <button id="MsgModalCancel" type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+          <button id="MsgModalOk" type="button" class="btn btn-primary" data-bs-dismiss="modal">确定</button>
+        </div>
+      </div>
+    </div>
+    <script defer="defer">
+      let MsgModal = null;
+      try {
+        MsgModal = new bootstrap.Modal('#MsgModal', {
+          keyboard: false,
+          focus: false,
+        });
+      } catch (ex) {
+        location.reload();
+      }
+
+
+      /* 加载模态框 配套函数 */
+      let MsgModalTitle = document.getElementById("MsgModalTitle");
+      let MsgModalTip = document.getElementById("MsgModalTip");
+      let MsgModalCancel = document.getElementById("MsgModalCancel");
+      let MsgModalOk = document.getElementById("MsgModalOk");
+
+      function MsgBoxShowLoading(title, msg) {
+        MsgModalTitle.innerText = title;
+        MsgModalTip.innerHTML = msg +
+          '<span class="ms-4 spinner-border text-primary" role="status">\n' +
+          '  <span class="visually-hidden">Loading...</span>\n' +
+          '</span>';
+        MsgModalCancel.disabled = true;
+        MsgModalOk.disabled = true;
+        MsgModal.show();
+      }
+      function MsgBoxShow(title, msg) {
+        MsgModalTitle.innerText = title;
+        MsgModalTip.innerHTML = msg;
+        MsgModalCancel.disabled = false;
+        MsgModalOk.disabled = false;
+        MsgModal.show();
+      }
+      function MsgBoxClose() {
+        MsgModal.hide();
+      }
+      function MsgBoxShowLoadingResult(msg) {
+        MsgModalTip.innerHTML = msg;
+        MsgModalCancel.disabled = false;
+        MsgModalOk.disabled = false;
+      }
+      function MsgBoxShowLoadingStep(msg) {
+        MsgModalTip.innerHTML = msg +
+          '<span class="ms-4 spinner-border text-primary" role="status">\n' +
+          '  <span class="visually-hidden">Loading...</span>\n' +
+          '</span>';
+      }
+
+    </script>
+  </div>
+
+
+
+</body>
+<!-- APP 代码 -->
+<script defer="defer">
+  //#region 顶部状态显示管理
+  let v_state = document.getElementById("v_state");
+  function ShowLoadingState(msg) {
+    v_state.setAttribute("class", " m-0 d-flex justify-content-center align-items-center alert alert-primary h4 text-center");
+    v_state.innerHTML = msg + '<span class="m-0 p-0 ms-2 spinner-border text-primary" role="status">\n' +
+      '  <span class="visually-hidden">Loading...</span>\n' +
+      '</span>';
+  }
+  function ShowOnLineState() {
+    v_state.setAttribute("class", "m-0 alert alert-success h4 text-center");
+    v_state.innerHTML = "设 备 在 线";
+  }
+  function ShowOfflineState() {
+    v_state.setAttribute("class", "m-0 alert alert-danger h4 text-center");
+    v_state.innerHTML = "设 备 离 线";
+  }
+  //#endregion
+
+  //#region 开关控制
+  let in_sw1 = document.getElementById("in_sw1");
+  let v_sw1_value = document.getElementById("v_sw1_value");
+
+  let in_sw2 = document.getElementById("in_sw2");
+  let v_sw2_value = document.getElementById("v_sw2_value");
+
+  let btn_sw3_on = document.getElementById("btn_sw3_on");
+  let btn_sw3_off = document.getElementById("btn_sw3_off");
+  let btn_sw4_on = document.getElementById("btn_sw4_on");
+  let btn_sw4_off = document.getElementById("btn_sw4_off");
+
+  btn_sw3_on.onclick = () => SwitchControl(3, 1);
+  btn_sw3_off.onclick = () => SwitchControl(3, 0);
+  btn_sw4_on.onclick = () => SwitchControl(4, 1);
+  btn_sw4_off.onclick = () => SwitchControl(4, 0);
+
+
+  function MosSwitchOnChange(v) {
+
+    if (v == in_sw1)
+      SwitchControl(1, in_sw1.value);
+    if (v == in_sw2)
+      SwitchControl(2, in_sw2.value);
+  }
+
+
+  function SwitchControl(channel, value) {
+
+    if (channel == 1) {
+      in_sw1.value = value;
+      v_sw1_value.innerText = CalcPwmPercent(value) + "%";
+    } else if (channel == 2) {
+      in_sw2.value = value;
+      v_sw2_value.innerText = CalcPwmPercent(value) + "%";
+    }
+
+
+    ShowLoadingState("设 置 中");
+    fetch("/api/switchs/control" +
+      "?id=" + channel +
+      "&value=" + value, { method: "get" })
+      .then(() => {
+        ShowOnLineState();
+      })
+      .catch(ex => {
+        ShowOfflineState();
+        MsgBoxShow("开关控制", "开关" + channel + "控制失败，请检查网络！" + ex.message.message);
+      });
+  }
+  function CalcPwmPercent(value) {
+    let v = (value / 1023) * 100;
+    if (v >= 100)
+      return 100;
+    return v.toFixed(1);
+  }
+  //#endregion
+
+  //#region 开关名称设置
+
+  let v_sw1_name = document.getElementById("v_sw1_name");
+  let v_sw2_name = document.getElementById("v_sw2_name");
+  let v_sw3_name = document.getElementById("v_sw3_name");
+  let v_sw4_name = document.getElementById("v_sw4_name");
+
+  let in_sw1_name = document.getElementById("in_sw1_name");
+  let in_sw2_name = document.getElementById("in_sw2_name");
+  let in_sw3_name = document.getElementById("in_sw3_name");
+  let in_sw4_name = document.getElementById("in_sw4_name");
+
+
+  let btn_switchs_name_get = document.getElementById("btn_switchs_name_get");
+  let btn_switchs_name_save = document.getElementById("btn_switchs_name_save");
+
+  function SyncSwitchName(isTip = false) {
+    if (isTip)
+      MsgBoxShowLoading("开关名称获取", "正在获取中...");
+    fetch("/api/switchs/get-names", { method: "get" })
+      .then(resp => resp.json())
+      .then(data => {
+        v_sw1_name.innerText = in_sw1_name.value = data.l1;
+        v_sw2_name.innerText = in_sw2_name.value = data.l2;
+        v_sw3_name.innerText = in_sw3_name.value = data.l3;
+        v_sw4_name.innerText = in_sw4_name.value = data.l4;
+        if (isTip) MsgBoxShowLoadingResult("获取成功！");
+      })
+      .catch(ex => {
+        if (isTip) MsgBoxShowLoadingResult("获取失败，请检查网络！" + ex.message);
+      });
+  }
+
+  btn_switchs_name_get.onclick = () => SyncSwitchName(true);
+
+  btn_switchs_name_save.onclick = () => {
+    if (in_sw1_name.value === "" ||
+      in_sw2_name.value === "" ||
+      in_sw3_name.value === "" ||
+      in_sw4_name.value === "") {
+      MsgBoxShow("开关名称设置", "设置错误，请填写开关名称！");
+      return;
+    }
+    MsgBoxShowLoading("开关名称设置", "正在设置中...");
+    fetch("/api/switchs/set-names" +
+      "?l1=" + in_sw1_name.value +
+      "&l2=" + in_sw2_name.value +
+      "&l3=" + in_sw3_name.value +
+      "&l4=" + in_sw4_name.value, { method: "get" })
+      .then(() => {
+        MsgBoxShowLoadingResult("设置成功！");
+        v_sw1_name.innerText = in_sw1_name.value
+        v_sw2_name.innerText = in_sw2_name.value
+        v_sw3_name.innerText = in_sw3_name.value
+        v_sw4_name.innerText = in_sw4_name.value
+      })
+      .catch(ex => MsgBoxShowLoadingResult("设置失败，请检查网络！" + ex.message));
+  }
+  //#endregion
+
+  //#region 触发器设置
+
+  // /* 获取触发器配置 */
+  // function TriggerConfig_Load(start) {
+  //   let root = start.parentElement.parentElement;
+  //   let in_mode = root.getElementsByClassName("in-trigger-mode")[0];
+  //   let in_name = root.getElementsByClassName("in-trigger-name")[0];
+  //   let in_target = root.getElementsByClassName("in-trigger-target")[0];
+  //   let in_action = root.getElementsByClassName("in-trigger-action")[0];
+  //   let in_false_action = root.getElementsByClassName("in-trigger-false-action")[0];
+  //   let v_name = root.parentElement.getElementsByClassName("trigger-name")[0]
+  //   let trigger_id = v_name.trigger_id;
+  //   MsgBoxShowLoading("触发器配置加载", "正在加载中...");
+  //   fetch("/api/triggers/get-config?id=" + trigger_id, { method: "get" })
+  //     .then(resp => resp.json())
+  //     .then(data => {
+  //       in_name.value = data.name;
+  //       v_name.innerText = data.name + " (L" + data.id + ")";
+  //       in_mode.selectedIndex = data.mode;
+  //       in_target.selectedIndex = data.target - 1;
+  //       in_action.value = data.action;
+  //       in_false_action.value = data.false_action;
+  //       MsgBoxShowLoadingResult("加载成功！")
+  //     })
+  //     .catch(ex => MsgBoxShowLoadingResult("加载失败，请检查网络！" + ex.message))
+  // }
+  /* 保存触发器配置 */
+  function TriggerConfig_Save(start) {
+    let root = start.parentElement.parentElement;
+    let in_mode = root.getElementsByClassName("in-trigger-mode")[0];
+    let in_target = root.getElementsByClassName("in-trigger-target")[0];
+    let name = root.getElementsByClassName("in-trigger-name")[0].value;
+    let action = root.getElementsByClassName("in-trigger-action")[0].value;
+
+
+    let false_action = root.getElementsByClassName("in-trigger-false-action")[0].value;
+    let mode = in_mode.options[in_mode.selectedIndex].value;
+    let target = in_target.options[in_target.selectedIndex].value;
+    let trigger_id = root.parentElement.getElementsByClassName("card-header")[0].trigger_id;
+
+
+    MsgBoxShowLoading("触发器配置保存", "正在保存中...");
+    fetch("/api/triggers/set-config" +
+      "?id=" + trigger_id +
+      "&name=" + name +
+      "&mode=" + mode +
+      "&target=" + target +
+      "&action=" + action +
+      "&false_action=" + false_action,
+      { method: "get" })
+      .then(resp => resp.json())
+      .then(data => {
+        root.parentElement.getElementsByClassName("card-header")[0]
+          .innerText = name + " (L" + trigger_id + ")"
+        MsgBoxShowLoadingResult("保存成功！")
+      })
+      .catch(ex => MsgBoxShowLoadingResult("保存失败，请检查网络！" + ex.message))
+    //alert("mode:" + mode + " target:" + target + " action:" + action + " fa:" + false_action);
+  }
+  //#endregion
+
+  //#region 页面初始化数据状态同步
+  /* 同步开关值 */
+  fetch("/api/dev/datas", { method: "get" })
+    .then(resp => resp.json())
+    .then(data => {
+      in_sw1.value = data.L1;
+      v_sw1_value.innerText = CalcPwmPercent(data.L1) + "%";
+
+      in_sw2.value = data.L2;
+      v_sw2_value.innerText = CalcPwmPercent(data.L2) + "%";
+
+      if (data.L3) btn_sw3_on.checked = true;
+      else btn_sw3_off.checked = true;
+      if (data.L4) btn_sw4_on.checked = true;
+      else btn_sw4_off.checked = true;
+
+      ShowOnLineState();
+    }).catch(ex => ShowOfflineState());
+  /* 同步开关名称 */
+  SyncSwitchName();
+  //#endregion
+
+  /* 加载触发器信息 */
+  let AppAccordionTriggerSetting_IsOpen = false;
+  function LoadTriggersInfo(isTip = false) {
+
+    if (isTip) {
+      MsgBoxShowLoading("触发器信息获取", "正在获取中...");
+    } else {
+      if (AppAccordionTriggerSetting_IsOpen) {
+        AppAccordionTriggerSetting_IsOpen = false;
+        return;
+      }
+      AppAccordionTriggerSetting_IsOpen = true;
+    }
+
+    fetch("/api/triggers/get-config", { method: "get" })
+      .then(resp => resp.json())
+      .then(data => {
+        let v_triggers = document.getElementsByClassName("trigger_template");
+        for (let i = 0; i < v_triggers.length; i++) {
+          let v_trigger = v_triggers[i];
+          let trigger_data = data[i];
+          v_trigger.getElementsByClassName("card-header")[0]
+            .innerText = trigger_data.name + " (L" + trigger_data.id + ")"
+          v_trigger.getElementsByClassName("in-trigger-name")[0]
+            .value = trigger_data.name;
+          v_trigger.getElementsByClassName("in-trigger-mode")[0]
+            .selectedIndex = trigger_data.mode;
+          v_trigger.getElementsByClassName("in-trigger-target")[0]
+            .selectedIndex = trigger_data.target - 1;
+          v_trigger.getElementsByClassName("in-trigger-action")[0]
+            .value = trigger_data.action;
+          v_trigger.getElementsByClassName("in-trigger-false-action")[0]
+            .value = trigger_data.false_action;
+        }
+        MsgBoxShowLoadingResult("加载成功！");
+      }).catch(ex => MsgBoxShow("触发器信息获取", "获取失败，请检查网络！" + ex.message));
+  }
+</script>
+
+</html>
