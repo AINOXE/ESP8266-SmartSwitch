@@ -38,10 +38,10 @@ void CronJobsHandle()
         {
             int weekAndTime = timeStr.toInt();
             // 70000
-            uint8_t timeA_WeekDay = weekAndTime / 10000 % 10;
+            uint8_t weekDay = weekAndTime / 10000 % 10;
             // Serial.printf("定时任务处理: WeekDay=%d NowWeekDay=%d\n",timeA_WeekDay,now.DayOfWeek());
             /* 今天不是任务触发天 */
-            if (timeA_WeekDay != now.DayOfWeek() && timeA_WeekDay != 0)
+            if (weekDay != now.DayOfWeek() && weekDay != 0)
             {
                 job["exec"] = 0;
                 continue;

@@ -31,6 +31,7 @@ void setup()
     HardwareTriggerTicker.attach_ms(100, HardwareTriggersHandle);
     /* 设置定时200ms 执行一次定时任务检查 */
     CronJobsTicker.attach_ms(500, CronJobsHandle);
+    
 }
 
 void loop()
