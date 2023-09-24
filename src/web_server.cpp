@@ -152,6 +152,73 @@ void WebServer_Init()
                 switchs_name["l4"].as<String>().c_str());
         WebServer.send(200, CONTENT_TYPE_JSON, buf);
     });
+    /* 添加定时任务API */
+    MapUri("/api/cron-jobs/create", HTTP_GET)
+    {
+        String name = WebServer.arg("name");
+
+        if (SystemConfig["cron_jobs"].containsKey(name))
+        {
+            Serial.printf("定时任务-添加: 失败！[%s] 已存在！", name.c_str());
+            WebServer.send(200, CONTENT_TYPE_JSON,
+                           "{\"code\":-1,\"msg\":\"任务名称已存在！\"}");
+            return;
+        }
+        String time = WebServer.arg("time");
+        String target = WebServer.arg("target");
+        String action = WebServer.arg("action");
+        Serial.printf("定时任务-添加: [%s] Time=%s, Target=%s, Action=%s\n",
+                      name.c_str(), time.c_str(), target.c_str(), action.c_str());
+        JsonObject cronJob = SystemConfig["cron_jobs"].createNestedObject(name);
+        cronJob["time"] = time.toInt();
+        cronJob["target"] = target;
+        cronJob["action"] = action;
+        cronJob["exec"] = 0;
+        SystemConfig_Save();
+        WebServer.send(200, CONTENT_TYPE_JSON, WEB_RESULT_SUCCESS_JSON);
+    });
+    /* 删除定时任务API */
+    MapUri("/api/cron-jobs/delete", HTTP_GET)
+    {
+        String name = WebServer.arg("name");
+        Serial.printf("定时任务-删除: [%s]", name.c_str());
+        SystemConfig["cron_jobs"].remove(name);
+        WebServer.send(200, CONTENT_TYPE_JSON, WEB_RESULT_SUCCESS_JSON);
+    });
+
+    /* 更新定时任务API */
+    MapUri("/api/cron-jobs/update", HTTP_GET)
+    {
+        String name = WebServer.arg("name");
+
+        if (!SystemConfig["cron_jobs"].containsKey(name))
+        {
+            Serial.printf("定时任务-更新: 失败！[%s] 不存在！", name.c_str());
+            WebServer.send(200, CONTENT_TYPE_JSON,
+                           "{\"code\":-1,\"msg\":\"任务不存在！\"}");
+            return;
+        }
+        String time = WebServer.arg("time");
+        String target = WebServer.arg("target");
+        String action = WebServer.arg("action");
+        Serial.printf("定时任务-更新: [%s] Time=%s, Target=%s, Action=%s\n",
+                      name.c_str(), time.c_str(), target.c_str(), action.c_str());
+        JsonObject cronJob = SystemConfig["cron_jobs"].createNestedObject(name);
+        cronJob["time"] = time.toInt();
+        cronJob["target"] = target;
+        cronJob["action"] = action;
+        cronJob["exec"] = 0;
+        SystemConfig_Save();
+        WebServer.send(200, CONTENT_TYPE_JSON, WEB_RESULT_SUCCESS_JSON);
+    });
+    /* 获取所有定时任务API */
+    MapUri("/api/cron-jobs/get-all", HTTP_GET)
+    {
+        char *buf = (char *)malloc(2048);
+        serializeJsonPretty(SystemConfig["cron_jobs"], buf,2048);
+        WebServer.send(200, CONTENT_TYPE_JSON, buf);
+        free(buf);
+    });
     /* 安全认证API 认证完成后跳转主页*/
     MapUri("/api/admin/auth", HTTP_GET)
     {
