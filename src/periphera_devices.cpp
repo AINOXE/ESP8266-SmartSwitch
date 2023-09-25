@@ -243,7 +243,7 @@ void PeripheralDevices_Init()
 
     pinMode(D0, INPUT);
     pinMode(D8, INPUT);
-    pinMode(A0, INPUT);
+    //pinMode(A0, INPUT);
     Serial.printf("PWM初始化中... Freq:%d  Step:%d\n", DevicesData.PwmFreq, DevicesData.PwmStep);
 
     analogWriteFreq(DevicesData.PwmFreq);

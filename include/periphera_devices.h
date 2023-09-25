@@ -9,8 +9,9 @@ void PeripheralDevices_GetDataLoop();
 
 #define L_RELAY_CONVERT_VALUE(V) !V
 
-#define Trigger_ReadHdrValue(id) digitalRead(id == 1 ? D0 : id == 2 ? D8 \
-                                                                    : A0)
+#define Trigger_ReadHdrValue(id) (id == 1 ? digitalRead(D0) : id == 2      ? digitalRead(D8) \
+                                                          : analogRead(A0)<100 ? 0               \
+                                                                           : 1)
 #define Trigger_GetValue(id)                             \
     (id == 1 ? DevicesData.T1 : id == 2 ? DevicesData.T2 \
                                         : DevicesData.T3)
