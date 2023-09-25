@@ -54,6 +54,8 @@ struct _DevicesData_t
     int T1;
     int T2;
     int T3;
+    int PwmFreq;
+    int PwmStep;
 };
 
 extern _DevicesData_t DevicesData;

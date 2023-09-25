@@ -2,7 +2,6 @@
 #include "periphera_devices.h"
 extern void hardwareTriggerHandle(JsonObject trigger);
 
-
 void HardwareTriggersHandle()
 {
     JsonArray triggers = SystemConfig["triggers"];
@@ -13,11 +12,17 @@ void HardwareTriggersHandle()
 
 inline void hardwareTriggerHandle(JsonObject trigger)
 {
+    String action = trigger["action"];
+
+    if (action == "")
+    {
+        return;
+    }
     int id = trigger["id"];
     int mode = trigger["mode"];
-    String name=trigger["name"];
+    String name = trigger["name"];
     int target = trigger["target"];
-    String action = trigger["action"];
+
     String false_action = trigger["false_action"];
     /* 获取触发器的电平 */
     int tv = Trigger_ReadHdrValue(id);

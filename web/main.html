@@ -7,11 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>智能开关</title>
   <link href="./bootstrap.css" rel="stylesheet">
+  <link onerror="location.reload()" href="./bootstrap.min.css.gz" rel="stylesheet">
+  <!-- 工具 -->
   <script>
-    function loadError() {
-      location.reload();
-    }
-
+    /* 日期格式化 */
     Date.prototype.format = function (fmt) {
       var o = {
         "M+": this.getMonth() + 1,                 //月份 
@@ -32,12 +31,30 @@
       }
       return fmt;
     }
+    let WeekDayStrArr = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "每天"];
+
+    function getWeekDayId(str) {
+      switch (str) {
+        case "星期日": return 0;
+        case "星期一": return 1;
+        case "星期二": return 2;
+        case "星期三": return 3;
+        case "星期四": return 4;
+        case "星期五": return 5;
+        case "星期六": return 6;
+        case "每天": return 7;
+      }
+    }
+
+    function CalcPwmPercent(value) {
+      let v = (value / 1023) * 100;
+      if (v >= 100)
+        return 100;
+      return v.toFixed(1);
+    }
   </script>
-
-  <link onerror="loadError()" href="./bootstrap.min.css.gz" rel="stylesheet">
-
-
   <style>
+    /* 滑动条颜色设置 */
     input[type="range"]::-webkit-slider-runnable-track {
       background: #ded7d7;
     }
@@ -78,219 +95,246 @@
     </div>
   </header>
 
-  <main>
-    <div class="container pt-3 d-grid gap-2 col-md-8 col-lg-6 col-sm-12 mx-auto">
-      <div id="v_state" style="height: 62px;" class="alert alert-dark h4 text-center m-0 d-flex justify-content-center"
-        role="alert">
-        初 始 化 中
-      </div>
-      <div class="row mt-0 g-2">
-        <div class="col-md-6 col-sm-12">
-          <div class="card h-100">
-            <div class="card-header"><span id="v_sw1_name">开关1</span> (L1)</div>
-            <div class="card-body row">
-              <label style="width: 65px;" id="v_sw1_value" for="in_sw1"
-                class="p-0 ps-3 col-auto form-label">0.0%</label>
-              <input id="in_sw1" value="0" min="0" max="1023" onchange="MosSwitchOnChange(this)"
-                class="col form-range ms-2 me-4" type="range" form-range-track-bg="red">
-              <div class="btn-group" role="group" aria-label="Basic outlined example">
-                <button onclick="SwitchControl(1,0)" type="button" class="btn btn-outline-primary">最小</button>
-                <button onclick="SwitchControl(1,511)" type="button" class="btn btn-outline-primary">中等</button>
-                <button onclick="SwitchControl(1,1023)" type="button" class="btn btn-outline-primary">最大</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6 col-sm-12">
-          <div class="card h-100">
-            <div class="card-header"><span id="v_sw2_name">开关2</span> (L2)</div>
-            <div class="card-body row">
-              <label style="width: 65px;" id="v_sw2_value" for="in_sw2"
-                class="p-0 ps-3 col-auto form-label">0.0%</label>
-              <input id="in_sw2" value="0" min="0" max="1023" onchange="MosSwitchOnChange(this)"
-                class="col form-range ms-2 me-4" type="range" form-range-track-bg="red">
-              <div class="btn-group" role="group" aria-label="Basic outlined example">
-                <button onclick="SwitchControl(2,0)" type="button" class="btn btn-outline-primary">最小</button>
-                <button onclick="SwitchControl(2,511)" type="button" class="btn btn-outline-primary">中等</button>
-                <button onclick="SwitchControl(2,1023)" type="button" class="btn btn-outline-primary">最大</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="card h-100">
-            <div class="card-header"><span id="v_sw3_name">开关3</span> (L3)</div>
-            <div class="card-body h5 row d-flex align-items-center">
-
-              <div class="btn-group col text-center" role="group" aria-label="Vertical radio toggle button group">
-                <input type="radio" class="btn-check" name="l3-radio" id="btn_sw3_on" autocomplete="off">
-                <label class="btn btn-outline-primary" for="btn_sw3_on">开</label>
-                <input type="radio" class="btn-check" name="l3-radio" id="btn_sw3_off" autocomplete="off" checked>
-                <label class="btn btn-outline-primary" for="btn_sw3_off">关</label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="card h-100">
-            <div class="card-header"><span id="v_sw4_name">开关4</span> (L4)</div>
-            <div class="card-body h5 row d-flex align-items-center">
-
-              <div class="btn-group col text-center" role="group" aria-label="Vertical radio toggle button group">
-                <input type="radio" class="btn-check" name="l4-radio" id="btn_sw4_on" autocomplete="off">
-                <label class="btn btn-outline-primary" for="btn_sw4_on">开</label>
-                <input type="radio" class="btn-check" name="l4-radio" id="btn_sw4_off" autocomplete="off" checked>
-                <label class="btn btn-outline-primary" for="btn_sw4_off">关</label>
-              </div>
+  <div class="container pt-3 d-grid gap-2 col-md-8 col-lg-6 col-sm-12 mx-auto">
+    <div id="v_state" style="height: 62px;" class="alert alert-dark h4 text-center m-0 d-flex justify-content-center"
+      role="alert">
+      初 始 化 中
+    </div>
+    <!-- L1,2,3,4 开关 -->
+    <div class="row mt-0 g-2">
+      <div class="col-md-6 col-sm-12">
+        <div class="card h-100">
+          <div class="card-header"><span id="v_sw1_name">开关1</span> (L1)</div>
+          <div class="card-body row">
+            <label style="width: 65px;" id="v_sw1_value" for="in_sw1" class="p-0 ps-3 col-auto form-label">0.0%</label>
+            <input id="in_sw1" value="0" min="0" max="1000" onchange="Switch_Control(1, in_sw1.value)"
+              class="col form-range ms-2 me-4" type="range" form-range-track-bg="red">
+            <div class="btn-group" role="group" aria-label="Basic outlined example">
+              <button onclick="Switch_Control(1,0)" type="button" class="btn btn-outline-primary">最小</button>
+              <button onclick="Switch_Control(1,500)" type="button" class="btn btn-outline-primary">中等</button>
+              <button onclick="Switch_Control(1,1000)" type="button" class="btn btn-outline-primary">最大</button>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="accordion mt-2 mb-3" id="AppAccordion">
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="AppAccordion-PeriodicTaskManageHead">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-              data-bs-target="#AppAccordion-PeriodicTaskManage" aria-expanded="false"
-              aria-controls="AppAccordion-PeriodicTaskManage">
-              定时任务管理
-            </button>
-          </h2>
-          <div id="AppAccordion-PeriodicTaskManage" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
-            <div class="accordion-body">
-              <div class="row">
-                <button onclick="CronJobs_Load(true)" class="col-auto m-2 btn btn-outline-info">刷新</button>
-                <button class="col-auto m-2 btn btn-outline-primary" data-bs-toggle="modal"
-                  onclick="CronJob_Create(false)">一次性任务添加</button>
-                <button class="col-auto m-2 btn btn-outline-primary" data-bs-toggle="modal"
-                  onclick="CronJob_Create(true)">周期任务添加</button>
-              </div>
-              <ol id="cron_jobs" class="list-group list-group-numbered ">
-                <li onclick="CronJob_Edit(this)"
-                  class="cron-job list-group-item-action list-group-item d-flex justify-content-between align-items-start mt-2">
-                  <div class="ms-2 me-auto">
-                    <div class="cron-job-name fw-bold">关灯任务</div>
-                    <div>
-                      <span class="cron-job-target-name">灯泡</span>&nbsp;
-                      <span class="cron-job-time">每天 21:30</span>
-                      &nbsp;设为&nbsp;
-                      <span class="cron-job-action">打开</span>
-                    </div>
-                  </div>
-                  <span class="badge bg-primary rounded-pill">
-                    L<span class="cron-job-target">1</span>
-                  </span>
-                </li>
-              </ol>
+      <div class="col-md-6 col-sm-12">
+        <div class="card h-100">
+          <div class="card-header"><span id="v_sw2_name">开关2</span> (L2)</div>
+          <div class="card-body row">
+            <label style="width: 65px;" id="v_sw2_value" for="in_sw2" class="p-0 ps-3 col-auto form-label">0.0%</label>
+            <input id="in_sw2" value="0" min="0" max="1000" onchange="Switch_Control(2, in_sw2.value)"
+              class="col form-range ms-2 me-4" type="range" form-range-track-bg="red">
+            <div class="btn-group" role="group" aria-label="Basic outlined example">
+              <button onclick="Switch_Control(2,0)" type="button" class="btn btn-outline-primary">最小</button>
+              <button onclick="Switch_Control(2,500)" type="button" class="btn btn-outline-primary">中等</button>
+              <button onclick="Switch_Control(2,1000)" type="button" class="btn btn-outline-primary">最大</button>
             </div>
           </div>
         </div>
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="AppAccordion-TriggerSettingHead">
-            <button onclick="LoadTriggersInfo()" class="accordion-button collapsed" type="button"
-              data-bs-toggle="collapse" data-bs-target="#AppAccordion-TriggerSetting" aria-expanded="false"
-              aria-controls="AppAccordion-TriggerSetting">
-              触发器设置
-            </button>
-          </h2>
-          <div id="AppAccordion-TriggerSetting" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
-            <div class="accordion-body m-0">
-              <div class="trigger_template card mt-2">
-                <h5 class="card-header trigger-name">触发器1 (T1)</h5>
-                <div class="card-body">
-                  <div class="row  m-0 mt-2 d-flex align-items-center">
-                    <label class="ps-0 col-auto">触发器名:</label>
-                    <input class="in-trigger-name col form-control" />
-                  </div>
-                  <div class="row  m-0 mt-2 d-flex align-items-center">
-                    <label class="ps-0 col-auto">触发方式:</label>
-                    <select class="in-trigger-mode col form-select">
-                      <option value="0">低电平触发</option>
-                      <option value="1">高电平触发</option>
-                      <option value="2">低电平上升触发</option>
-                      <option value="3">高电平下降触发</option>
-                    </select>
-                  </div>
-                  <div class="row  m-0 mt-2 d-flex align-items-center">
-                    <label class="ps-0 col-auto">控制目标:</label>
-                    <select class="in-trigger-target col form-select">
-                      <option value="1">L1</option>
-                      <option value="2">L2</option>
-                      <option value="3">L3</option>
-                      <option value="4">L4</option>
-                    </select>
-                  </div>
-                  <div class="row  m-0 mt-2 d-flex align-items-center">
-                    <label class="ps-0 col-auto">执行动作:</label>
-                    <input class="in-trigger-action col form-control" list="switchValueList" id="exampleDataList">
-                  </div>
-                  <div class="row  m-0 mt-2 d-flex align-items-center">
-                    <label class="ps-0 col-auto">否则执行:</label>
-                    <input class="in-trigger-false-action col form-control" list="switchValueList" id="exampleDataList">
-                  </div>
-                  <div class="row  m-0 mt-2 d-flex justify-content-end">
-                    <button onclick="LoadTriggersInfo(true)" class="col-auto btn btn-primary me-2">加载</button>
-                    <button onclick="TriggerConfig_Save(this)" class="col-auto btn btn-success">保存</button>
-                  </div>
-                </div>
-              </div>
-              <!-- 触发器 2，3 生成 -->
-              <script>
-                let trigger_template = document.getElementsByClassName("trigger_template")[0];
-                trigger_template.getElementsByClassName("card-header")[0].trigger_id = 1;
-                let t2 = trigger_template.cloneNode(true);
-                t2.getElementsByClassName("card-header")[0].trigger_id = 2;
-                t2.getElementsByClassName("card-header")[0].innerText = "触发器2 (T2)";
-                trigger_template.parentElement.appendChild(t2);
-                let t3 = trigger_template.cloneNode(true);
-                t3.getElementsByClassName("card-header")[0].trigger_id = 3;
-                t3.getElementsByClassName("card-header")[0].innerText = "触发器3 (T3)";
-                trigger_template.parentElement.appendChild(t3);
-              </script>
+      </div>
+      <div class="col-6">
+        <div class="card h-100">
+          <div class="card-header"><span id="v_sw3_name">开关3</span> (L3)</div>
+          <div class="card-body h5 row d-flex align-items-center">
+
+            <div class="btn-group col text-center" role="group" aria-label="Vertical radio toggle button group">
+              <input type="radio" class="btn-check" name="l3-radio" id="btn_sw3_on" autocomplete="off">
+              <label class="btn btn-outline-primary" for="btn_sw3_on">开</label>
+              <input type="radio" class="btn-check" name="l3-radio" id="btn_sw3_off" autocomplete="off" checked>
+              <label class="btn btn-outline-primary" for="btn_sw3_off">关</label>
             </div>
           </div>
         </div>
+      </div>
+      <div class="col-6">
+        <div class="card h-100">
+          <div class="card-header"><span id="v_sw4_name">开关4</span> (L4)</div>
+          <div class="card-body h5 row d-flex align-items-center">
 
-        <div class="accordion-item">
-          <h2 class="accordion-header" id="AppAccordion-ChannelNameSettingHead">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-              data-bs-target="#AppAccordion-ChannelNameSetting" aria-expanded="false"
-              aria-controls="AppAccordion-ChannelNameSetting">
-              开关名称设置
-            </button>
-          </h2>
-          <div id="AppAccordion-ChannelNameSetting" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
-            <div class="accordion-body">
-              <div class="row m-0 mt-2 d-flex align-items-center">
-                <label for="in_sw1_name" class="ps-0 col-auto">开关1:</label>
-                <input id="in_sw1_name" class="col form-control" type="text">
-              </div>
-              <div class="row m-0 mt-2 d-flex align-items-center">
-                <label for="in_sw2_name" class="ps-0 col-auto">开关2:</label>
-                <input id="in_sw2_name" class="col form-control" type="text">
-              </div>
-              <div class="row m-0 mt-2 d-flex align-items-center">
-                <label for="in_sw3_name" class="ps-0 col-auto">开关3:</label>
-                <input id="in_sw3_name" class="col form-control" type="text">
-              </div>
-              <div class="row m-0 mt-2 d-flex align-items-center">
-                <label for="in_sw4_name" class="ps-0 col-auto">开关4:</label>
-                <input id="in_sw4_name" class="col form-control" type="text">
-              </div>
-              <div class="row  m-0 mt-2 d-flex justify-content-end">
-                <button id="btn_switchs_name_get" class="col-auto btn btn-primary me-2">获取</button>
-                <button id="btn_switchs_name_save" class="col-auto btn btn-success">保存</button>
-              </div>
+            <div class="btn-group col text-center" role="group" aria-label="Vertical radio toggle button group">
+              <input type="radio" class="btn-check" name="l4-radio" id="btn_sw4_on" autocomplete="off">
+              <label class="btn btn-outline-primary" for="btn_sw4_on">开</label>
+              <input type="radio" class="btn-check" name="l4-radio" id="btn_sw4_off" autocomplete="off" checked>
+              <label class="btn btn-outline-primary" for="btn_sw4_off">关</label>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <!-- 手风琴 -->
+    <div class="accordion mt-2 mb-3" id="AppAccordion">
+      <!-- 定时任务管理 -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="AppAccordion-PeriodicTaskManageHead">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#AppAccordion-PeriodicTaskManage" aria-expanded="false"
+            aria-controls="AppAccordion-PeriodicTaskManage">
+            定时任务管理
+          </button>
+        </h2>
+        <div id="AppAccordion-PeriodicTaskManage" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
+          <div class="accordion-body">
+            <div class="row">
+              <button onclick="CronJobs_Load(true)" class="col-auto m-2 btn btn-outline-info">刷新</button>
+              <button class="col-auto m-2 btn btn-outline-primary" data-bs-toggle="modal"
+                onclick="CronJob_Create(false)">一次性任务添加</button>
+              <button class="col-auto m-2 btn btn-outline-primary" data-bs-toggle="modal"
+                onclick="CronJob_Create(true)">周期任务添加</button>
+            </div>
+            <ol id="cron_jobs" class="list-group list-group-numbered ">
+              <li onclick="CronJob_Edit(this)"
+                class="cron-job list-group-item-action list-group-item d-flex justify-content-between align-items-start mt-2">
+                <div class="ms-2 me-auto">
+                  <div class="cron-job-name fw-bold">关灯任务</div>
+                  <div>
+                    <span class="cron-job-target-name">灯泡</span>&nbsp;
+                    <span class="cron-job-time">每天 21:30</span>
+                    &nbsp;设为&nbsp;
+                    <span class="cron-job-action">打开</span>
+                  </div>
+                </div>
+                <span class="badge bg-primary rounded-pill">
+                  L<span class="cron-job-target">1</span>
+                </span>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <!-- 触发器管理 -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="AppAccordion-TriggerSettingHead">
+          <button onclick="Triggers_Load()" class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#AppAccordion-TriggerSetting" aria-expanded="false"
+            aria-controls="AppAccordion-TriggerSetting">
+            触发器设置
+          </button>
+        </h2>
+        <div id="AppAccordion-TriggerSetting" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
+          <div class="accordion-body m-0">
+            <div class="trigger_template card mt-2">
+              <h5 class="card-header trigger-name">触发器1 (T1)</h5>
+              <div class="card-body">
+                <div class="row  m-0 mt-2 d-flex align-items-center">
+                  <label class="ps-0 col-auto">触发器名:</label>
+                  <input class="in-trigger-name col form-control" />
+                </div>
+                <div class="row  m-0 mt-2 d-flex align-items-center">
+                  <label class="ps-0 col-auto">触发方式:</label>
+                  <select class="in-trigger-mode col form-select">
+                    <option value="0">低电平触发</option>
+                    <option value="1">高电平触发</option>
+                    <option value="2">低电平上升触发</option>
+                    <option value="3">高电平下降触发</option>
+                  </select>
+                </div>
+                <div class="row  m-0 mt-2 d-flex align-items-center">
+                  <label class="ps-0 col-auto">控制目标:</label>
+                  <select class="in-trigger-target col form-select">
+                    <option value="1">L1</option>
+                    <option value="2">L2</option>
+                    <option value="3">L3</option>
+                    <option value="4">L4</option>
+                  </select>
+                </div>
+                <div class="row  m-0 mt-2 d-flex align-items-center">
+                  <label class="ps-0 col-auto">执行动作:</label>
+                  <input class="in-trigger-action col form-control" list="switchValueList" id="exampleDataList">
+                </div>
+                <div class="row  m-0 mt-2 d-flex align-items-center">
+                  <label class="ps-0 col-auto">否则执行:</label>
+                  <input class="in-trigger-false-action col form-control" list="switchValueList" id="exampleDataList">
+                </div>
+                <div class="row  m-0 mt-2 d-flex justify-content-end">
+                  <button onclick="Triggers_Load(true)" class="col-auto btn btn-primary me-2">加载</button>
+                  <button onclick="Trigger_Save(this)" class="col-auto btn btn-success">保存</button>
+                </div>
+              </div>
+            </div>
+            <!-- 触发器 2，3 生成 -->
+            <script>
+              let trigger_template = document.getElementsByClassName("trigger_template")[0];
+              trigger_template.getElementsByClassName("card-header")[0].trigger_id = 1;
+              let t2 = trigger_template.cloneNode(true);
+              t2.getElementsByClassName("card-header")[0].trigger_id = 2;
+              t2.getElementsByClassName("card-header")[0].innerText = "触发器2 (T2)";
+              trigger_template.parentElement.appendChild(t2);
+              let t3 = trigger_template.cloneNode(true);
+              t3.getElementsByClassName("card-header")[0].trigger_id = 3;
+              t3.getElementsByClassName("card-header")[0].innerText = "触发器3 (T3)";
+              trigger_template.parentElement.appendChild(t3);
+            </script>
+          </div>
+        </div>
+      </div>
+      <!-- 开关设置 -->
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="AppAccordion-ChannelNameSettingHead">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#AppAccordion-ChannelNameSetting" aria-expanded="false"
+            aria-controls="AppAccordion-ChannelNameSetting">
+            开关设置
+          </button>
+        </h2>
+        <div id="AppAccordion-ChannelNameSetting" class="accordion-collapse collapse" data-bs-parent="#AppAccordion">
+          <div class="accordion-body">
 
-  </main>
+            <div class="card">
+              <h5 class="card-header">PWM-MOS 设置</h5>
+              <div class="card-body">
+
+                <div class="row m-0 d-flex align-items-center">
+                  <label for="in_sw_pwm_freq" class="ps-0 col-auto">PWM频率:</label>
+                  <input id="in_sw_pwm_freq" value="1000" placeholder="1000(1kHz)~10000(100kHz)"
+                    class="col form-control" type="number">
+                </div>
+                <div class="row m-0 mt-2 d-flex align-items-center">
+                  <label for="in_sw_pwm_step" class="ps-0 col-auto">PWM步长:</label>
+                  <input id="in_sw_pwm_step" value="1000" placeholder="1~50000" class="col form-control" type="number">
+                </div>
+              </div>
+            </div>
+
+            <div class="card mt-2">
+              <h5 class="card-header">开关名称</h5>
+              <div class="card-body">
+                <div class="row m-0 d-flex align-items-center">
+                  <label for="in_sw1_name" class="ps-0 col-auto">开关1:</label>
+                  <input id="in_sw1_name" class="col form-control" type="text">
+                </div>
+                <div class="row m-0 mt-2 d-flex align-items-center">
+                  <label for="in_sw2_name" class="ps-0 col-auto">开关2:</label>
+                  <input id="in_sw2_name" class="col form-control" type="text">
+                </div>
+                <div class="row m-0 d-flex align-items-center">
+                  <label for="in_sw3_name" class="ps-0 col-auto">开关3:</label>
+                  <input id="in_sw3_name" class="col form-control" type="text">
+                </div>
+                <div class="row m-0 mt-2 d-flex align-items-center">
+                  <label for="in_sw4_name" class="ps-0 col-auto">开关4:</label>
+                  <input id="in_sw4_name" class="col form-control" type="text">
+                </div>
+              </div>
+            </div>
+            <div class="row  m-0 mt-2 d-flex justify-content-end">
+              <button id="btn_switchs_name_get" class="col-auto btn btn-primary me-2">获取</button>
+              <button id="btn_switchs_name_save" class="col-auto btn btn-success">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <datalist id="switchValueList">
+    <option value="打开">
+    <option value="关闭">
+    <option value="反转">
+    <option value="无">
+  </datalist>
+
   <script src="./bootstrap.bundle.js"></script>
-  <script src="./bootstrap.bundle.min.js.gz"></script>
-
+  <script onerror="location.reload()" src="./bootstrap.bundle.min.js.gz"></script>
 
   <!-- 周期定时任务 编辑 创建 模态框 -->
   <div id="CronJobEditModal" tabindex="-1" class="modal fade" style="background-color: #F4F6FA"
@@ -348,180 +392,7 @@
       </div>
     </div>
   </div>
-  <!-- 定时任务 编辑 创建 模态框 Code -->
-  <script defer="defer">
-    /* 周期定时任务编辑模态框 */
-    const CronJobEditModal = new bootstrap.Modal('#CronJobEditModal', {
-      keyboard: false,
-      focus: false,
-    });
-    let CronJobEditModalTitle = document.getElementById("CronJobEditModalTitle");
-    /* 周期定时任务输入控件 */
-    let in_p_cron_job_name = document.getElementById("in_p_cron_job_name");
-    let in_p_cron_job_target = document.getElementById("in_p_cron_job_target");
-    let in_p_cron_job_weekday = document.getElementById("in_p_cron_job_weekday");
-    let in_p_cron_job_time = document.getElementById("in_p_cron_job_time");
-    let in_p_cron_job_action = document.getElementById("in_p_cron_job_action");
-
-    /* 周期定时任务按钮 */
-    let btn_p_cron_job_delete = document.getElementById("btn_p_cron_job_delete");
-    let btn_p_cron_job_save = document.getElementById("btn_p_cron_job_save");
-
-    let v_cron_job_weekday = document.getElementById("v_cron_job_weekday");
-
-    /* 周期定时任务 编辑事件处理函数 */
-    function CronJob_Edit(v_job) {
-
-      btn_p_cron_job_delete.style.display = '';
-      v_name = v_job.getElementsByClassName("cron-job-name")[0];
-      v_target = v_job.getElementsByClassName("cron-job-target")[0];
-      v_time = v_job.getElementsByClassName("cron-job-time")[0];
-      v_action = v_job.getElementsByClassName("cron-job-action")[0];
-
-      let isPeriodicMode = v_time.innerText.length < 9;
-
-      CronJobEditModalTitle.innerText =
-        (isPeriodicMode ? "周期" : "一次性") + "定时任务编辑";
-
-
-      in_p_cron_job_name.value = v_name.innerText;
-      /* 禁止修改任务名称 */
-      in_p_cron_job_name.disabled = true;
-      /* 更新按钮名称 */
-      in_p_cron_job_target.innerHTML =
-        '<option value="1">' + getSwitchName(1) + '</option>' +
-        '<option value="2">' + getSwitchName(2) + '</option>' +
-        '<option value="3">' + getSwitchName(3) + '</option>' +
-        '<option value="4">' + getSwitchName(4) + '</option>';
-      in_p_cron_job_target.selectedIndex = parseInt(v_target.innerText) - 1;
-      let timeStr = v_time.innerText;
-      /* 周期任务时间UI */
-      if (isPeriodicMode) {
-        v_cron_job_weekday.style.display = "";
-        in_p_cron_job_weekday.style.display = "";
-        v_cron_job_weekday.parentElement.classList.add("mt-2");
-        in_p_cron_job_weekday.selectedIndex = getWeekDayId(timeStr.substring(0, timeStr.indexOf(" ")));
-        in_p_cron_job_time.type = "time";
-        in_p_cron_job_time.value = timeStr.substring(timeStr.indexOf(" ") + 1);
-      }
-      /* 一次性任务时间UI */
-      else {
-        v_cron_job_weekday.style.display = "none";
-        in_p_cron_job_weekday.style.display = "none";
-        v_cron_job_weekday.parentElement.classList.remove("mt-2");
-        in_p_cron_job_time.type = "datetime-local";
-        in_p_cron_job_time.value = new Date(timeStr).format("yyyy-MM-dd hh:mm");
-      }
-
-
-      in_p_cron_job_action.value = v_action.innerText;
-
-      btn_p_cron_job_delete.onclick = () => {
-        MsgBoxShowLoading("定时任务删除", "正在删除中...");
-        fetch("/api/cron-jobs/delete?name=" + v_name.innerText, { method: "get" })
-          .then(resp => resp.json())
-          .then(data => {
-            /* 移除CronJob */
-            cron_jobs.removeChild(v_job);
-            MsgBoxShowLoadingResult("删除成功！");
-          }).catch(ex => MsgBoxShowLoadingResult("删除失败！" + ex.message));
-      };
-      btn_p_cron_job_save.onclick = () => {
-        /* 参数检查 */
-        if (in_p_cron_job_time.value == ""
-          || in_p_cron_job_action.value == "") {
-          MsgBoxShow("定时任务更新", "参数错误！");
-          return;
-        }
-        MsgBoxShowLoading("定时任务更新", "正在更新中...");
-        fetch("/api/cron-jobs/update" +
-          "?name=" + in_p_cron_job_name.value +
-          "&target=" + in_p_cron_job_target.value +
-          "&time=" + (isPeriodicMode ?
-            (in_p_cron_job_weekday.value + in_p_cron_job_time.value.replace(':', ''))
-            : new Date(in_p_cron_job_time.value).getTime() / 1000) +
-          "&action=" + in_p_cron_job_action.value, { method: "get" })
-          .then(resp => resp.json())
-          .then(data => {
-            /* 同步任务列表UI */
-            CronJobs_Load();
-            // v_target.innerText = in_p_cron_job_target.options[in_p_cron_job_target.selectedIndex].value;
-            // v_time.innerText = in_p_cron_job_weekday.options[in_p_cron_job_weekday.selectedIndex].innerText + " " + in_p_cron_job_time.value;
-            // v_action.innerText = in_p_cron_job_action.value;
-            MsgBoxShowLoadingResult("更新成功！");
-          })
-          .catch(ex => {
-            MsgBoxShowLoadingResult("更新失败！" + ex.message);
-          })
-      };
-      CronJobEditModal.show();
-
-
-    }
-    /* 周期定时任务 创建处理函数 */
-    function CronJob_Create(isPeriodicMode) {
-      /* 写入默认设置 */
-      CronJobEditModalTitle.innerText =
-        (isPeriodicMode ? "周期" : "一次性") + "定时任务添加";
-
-      in_p_cron_job_name.value = "";
-      in_p_cron_job_name.disabled = false;
-      in_p_cron_job_action.value = "无";
-      in_p_cron_job_target.selectedIndex = 0;
-      /* 周期任务时间UI */
-      if (isPeriodicMode) {
-        in_p_cron_job_weekday.style.display = "";
-        v_cron_job_weekday.style.display = "";
-        v_cron_job_weekday.parentElement.classList.add("mt-2");
-        in_p_cron_job_weekday.selectedIndex = 7;
-        in_p_cron_job_time.type = "time";
-        in_p_cron_job_time.value = new Date().format("hh:mm");
-      }
-      /* 一次性任务时间UI */
-      else {
-        in_p_cron_job_weekday.style.display = "none";
-        v_cron_job_weekday.style.display = "none";
-        v_cron_job_weekday.parentElement.classList.remove("mt-2");
-        in_p_cron_job_time.type = "datetime-local";
-        in_p_cron_job_time.value = new Date().format("yyyy-MM-dd hh:mm");
-      }
-      /* 隐藏删除按钮 */
-      btn_p_cron_job_delete.style.display = 'none';
-      /* 设置点击事件 */
-      btn_p_cron_job_save.onclick = () => {
-        /* 参数检查 */
-        if (in_p_cron_job_name.value == ""
-          || in_p_cron_job_time.value == ""
-          || in_p_cron_job_action.value == "") {
-          MsgBoxShow("定时任务添加", "参数错误！");
-          return;
-        }
-        MsgBoxShowLoading("定时任务添加", "正在添加中...");
-        fetch("/api/cron-jobs/create" +
-          "?name=" + in_p_cron_job_name.value +
-          "&target=" + in_p_cron_job_target.options[in_p_cron_job_target.selectedIndex].value +
-          "&time=" + (isPeriodicMode
-            ? (in_p_cron_job_weekday.value + in_p_cron_job_time.value.replace(':', ''))
-            : new Date(in_p_cron_job_time.value).getTime() / 1000) +
-          "&action=" + in_p_cron_job_action.value, { method: "get" })
-          .then(resp => resp.json())
-          .then(data => {
-            if (data.code == -1) {
-              MsgBoxShowLoadingResult("更新失败！" + data.msg);
-              return;
-            }
-            /* 重新加载定时任务列表 */
-            CronJobs_Load();
-            MsgBoxShowLoadingResult("添加成功！");
-          })
-          .catch(ex => MsgBoxShowLoadingResult("更新失败！" + ex.message));
-      };
-      CronJobEditModal.show();
-    }
-  </script>
-
-
-  <!-- NetSetting -->
+  <!-- 网络设置 模态框 -->
   <div id="NetSetting" tabindex="-1" class="modal fade" style="background-color: #F4F6FA" data-bs-backdrop="static"
     data-bs-keyboard="false" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -743,11 +614,171 @@
     </script>
   </div>
 
-
-
 </body>
 <!-- APP 代码 -->
+<!-- 开关控制 -->
 <script defer="defer">
+  let in_sw1 = document.getElementById("in_sw1");
+  let v_sw1_value = document.getElementById("v_sw1_value");
+
+  let in_sw2 = document.getElementById("in_sw2");
+  let v_sw2_value = document.getElementById("v_sw2_value");
+  function ConverToPercent(v) {
+    let ret = (parseFloat(v) / 10).toFixed(1);
+    if (ret >= 100) return 100;
+    return ret;
+  }
+  in_sw1.onmousemove = () => { v_sw1_value.innerText = ConverToPercent(in_sw1.value) + '%'; }
+  in_sw2.onmousemove = () => { v_sw2_value.innerText = ConverToPercent(in_sw2.value) + '%'; }
+
+  let btn_sw3_on = document.getElementById("btn_sw3_on");
+  let btn_sw3_off = document.getElementById("btn_sw3_off");
+  let btn_sw4_on = document.getElementById("btn_sw4_on");
+  let btn_sw4_off = document.getElementById("btn_sw4_off");
+
+
+
+  btn_sw3_on.onclick = () => Switch_Control(3, 1);
+  btn_sw3_off.onclick = () => Switch_Control(3, 0);
+  btn_sw4_on.onclick = () => Switch_Control(4, 1);
+  btn_sw4_off.onclick = () => Switch_Control(4, 0);
+
+  /* 开关控制 */
+  function Switch_Control(channel, value) {
+    if (channel == 1) {
+      if (typeof (value) != "string") {
+        in_sw1.value = value;
+      }
+
+      v_sw1_value.innerText = ConverToPercent(value) + '%';
+      value = in_sw_pwm_step.value * (value / 1000);
+
+    } else if (channel == 2) {
+      if (typeof (value) != "string") {
+        in_sw2.value = value;
+      }
+      v_sw2_value.innerText = ConverToPercent(value) + '%';
+      value = in_sw_pwm_step.value * (value / 1000);
+    }
+
+    ShowLoadingState("设 置 中");
+    fetch("/api/switchs/control" +
+      "?id=" + channel +
+      "&value=" + value, { method: "get" })
+      .then(() => {
+        ShowOnLineState();
+      })
+      .catch(ex => {
+        ShowOfflineState();
+        MsgBoxShow("开关控制", "开关" + channel + "控制失败，请检查网络！" + ex.message.message);
+      });
+  }
+  /* 同步所有按钮状态 */
+  function Switchs_SyncStatus() {
+    fetch("/api/dev/datas", { method: "get" })
+      .then(resp => resp.json())
+      .then(data => {
+        in_sw1.value = data.L1;
+        v_sw1_value.innerText = CalcPwmPercent(data.L1) + "%";
+
+        in_sw2.value = data.L2;
+        v_sw2_value.innerText = CalcPwmPercent(data.L2) + "%";
+
+        if (data.L3) btn_sw3_on.checked = true;
+        else btn_sw3_off.checked = true;
+        if (data.L4) btn_sw4_on.checked = true;
+        else btn_sw4_off.checked = true;
+
+        ShowOnLineState();
+      }).catch(ex => ShowOfflineState());
+  }
+
+</script>
+<!-- 开关名称编辑 -->
+<script defer="defer">
+  let v_sw1_name = document.getElementById("v_sw1_name");
+  let v_sw2_name = document.getElementById("v_sw2_name");
+  let v_sw3_name = document.getElementById("v_sw3_name");
+  let v_sw4_name = document.getElementById("v_sw4_name");
+
+  let in_sw1_name = document.getElementById("in_sw1_name");
+  let in_sw2_name = document.getElementById("in_sw2_name");
+  let in_sw3_name = document.getElementById("in_sw3_name");
+  let in_sw4_name = document.getElementById("in_sw4_name");
+
+  let in_sw_pwm_freq = document.getElementById("in_sw_pwm_freq");
+  let in_sw_pwm_step = document.getElementById("in_sw_pwm_step");
+
+  /* 获取开关名称 */
+  function Switch_GetName(id) {
+    return (id == 1 ? v_sw1_name : id == 2 ? v_sw2_name : id == 3 ? v_sw3_name : v_sw4_name).innerText;
+  }
+  /* 同步所有开关配置 */
+  function Switchs_SyncConfig(isTip = false) {
+    if (isTip)
+      MsgBoxShowLoading("开关名称获取", "正在获取中...");
+    fetch("/api/switchs/get-config", { method: "get" })
+      .then(resp => resp.json())
+      .then(data => {
+        v_sw1_name.innerText = in_sw1_name.value = data.l1;
+        v_sw2_name.innerText = in_sw2_name.value = data.l2;
+        v_sw3_name.innerText = in_sw3_name.value = data.l3;
+        v_sw4_name.innerText = in_sw4_name.value = data.l4;
+
+        in_sw_pwm_freq.value = data.pwm_freq;
+        in_sw_pwm_step.value = data.pwm_step;
+        if (isTip) MsgBoxShowLoadingResult("获取成功！");
+      })
+      .catch(ex => {
+        if (isTip) MsgBoxShowLoadingResult("获取失败，请检查网络！" + ex.message);
+      });
+  }
+
+  let btn_switchs_name_get = document.getElementById("btn_switchs_name_get");
+  let btn_switchs_name_save = document.getElementById("btn_switchs_name_save");
+  btn_switchs_name_get.onclick = () => Switchs_SyncConfig(true);
+  /* 保存所有开关名称 */
+  btn_switchs_name_save.onclick = () => {
+    if (in_sw1_name.value === "" ||
+      in_sw2_name.value === "" ||
+      in_sw3_name.value === "" ||
+      in_sw4_name.value === "" ||
+      in_sw_pwm_freq.value === "" ||
+      in_sw_pwm_step.value === "") {
+      MsgBoxShow("开关设置", "填写错误，有空白！");
+      return;
+    }
+    let sw_pwm_freq = parseInt(in_sw_pwm_freq.value);
+    let sw_pwm_step = parseInt(in_sw_pwm_step.value);
+
+    if ((sw_pwm_freq < 1000 || sw_pwm_freq > 100000)
+      || (sw_pwm_step < 1 || sw_pwm_step > 50000)) {
+      MsgBoxShow("开关设置", "PWM频率或步长设置错误！");
+      return;
+    }
+    MsgBoxShowLoading("开关设置", "正在设置中...");
+    fetch("/api/switchs/set-config" +
+      "?l1=" + in_sw1_name.value +
+      "&l2=" + in_sw2_name.value +
+      "&l3=" + in_sw3_name.value +
+      "&l4=" + in_sw4_name.value +
+      "&pwm_frep=" + in_sw_pwm_freq.value +
+      "&pwm_step=" + in_sw_pwm_step.value, { method: "get" })
+      .then(() => {
+        MsgBoxShowLoadingResult("设置成功！");
+        v_sw1_name.innerText = in_sw1_name.value
+        v_sw2_name.innerText = in_sw2_name.value
+        v_sw3_name.innerText = in_sw3_name.value
+        v_sw4_name.innerText = in_sw4_name.value
+      })
+      .catch(ex => MsgBoxShowLoadingResult("设置失败，请检查网络！" + ex.message));
+  }
+
+</script>
+<!-- 触发器 -->
+<script defer=" defer">
+
+  let AppAccordionTriggerSetting_IsOpen = false;
   //#region 顶部状态显示管理
   let v_state = document.getElementById("v_state");
   function ShowLoadingState(msg) {
@@ -766,155 +797,9 @@
   }
   //#endregion
 
-  //#region 开关控制
-  let in_sw1 = document.getElementById("in_sw1");
-  let v_sw1_value = document.getElementById("v_sw1_value");
 
-  let in_sw2 = document.getElementById("in_sw2");
-  let v_sw2_value = document.getElementById("v_sw2_value");
-
-  let btn_sw3_on = document.getElementById("btn_sw3_on");
-  let btn_sw3_off = document.getElementById("btn_sw3_off");
-  let btn_sw4_on = document.getElementById("btn_sw4_on");
-  let btn_sw4_off = document.getElementById("btn_sw4_off");
-
-  btn_sw3_on.onclick = () => SwitchControl(3, 1);
-  btn_sw3_off.onclick = () => SwitchControl(3, 0);
-  btn_sw4_on.onclick = () => SwitchControl(4, 1);
-  btn_sw4_off.onclick = () => SwitchControl(4, 0);
-
-
-  function MosSwitchOnChange(v) {
-
-    if (v == in_sw1)
-      SwitchControl(1, in_sw1.value);
-    if (v == in_sw2)
-      SwitchControl(2, in_sw2.value);
-  }
-
-
-  function SwitchControl(channel, value) {
-
-    if (channel == 1) {
-      in_sw1.value = value;
-      v_sw1_value.innerText = CalcPwmPercent(value) + "%";
-    } else if (channel == 2) {
-      in_sw2.value = value;
-      v_sw2_value.innerText = CalcPwmPercent(value) + "%";
-    }
-
-
-    ShowLoadingState("设 置 中");
-    fetch("/api/switchs/control" +
-      "?id=" + channel +
-      "&value=" + value, { method: "get" })
-      .then(() => {
-        ShowOnLineState();
-      })
-      .catch(ex => {
-        ShowOfflineState();
-        MsgBoxShow("开关控制", "开关" + channel + "控制失败，请检查网络！" + ex.message.message);
-      });
-  }
-  function CalcPwmPercent(value) {
-    let v = (value / 1023) * 100;
-    if (v >= 100)
-      return 100;
-    return v.toFixed(1);
-  }
-  //#endregion
-
-  //#region 开关名称设置
-
-  let v_sw1_name = document.getElementById("v_sw1_name");
-  let v_sw2_name = document.getElementById("v_sw2_name");
-  let v_sw3_name = document.getElementById("v_sw3_name");
-  let v_sw4_name = document.getElementById("v_sw4_name");
-
-  let in_sw1_name = document.getElementById("in_sw1_name");
-  let in_sw2_name = document.getElementById("in_sw2_name");
-  let in_sw3_name = document.getElementById("in_sw3_name");
-  let in_sw4_name = document.getElementById("in_sw4_name");
-
-  function getSwitchName(id) {
-    return (id == 1 ? v_sw1_name : id == 2 ? v_sw2_name : id == 3 ? v_sw3_name : v_sw4_name).innerText;
-  }
-
-  let btn_switchs_name_get = document.getElementById("btn_switchs_name_get");
-  let btn_switchs_name_save = document.getElementById("btn_switchs_name_save");
-
-  function SyncSwitchName(isTip = false) {
-    if (isTip)
-      MsgBoxShowLoading("开关名称获取", "正在获取中...");
-    fetch("/api/switchs/get-names", { method: "get" })
-      .then(resp => resp.json())
-      .then(data => {
-        v_sw1_name.innerText = in_sw1_name.value = data.l1;
-        v_sw2_name.innerText = in_sw2_name.value = data.l2;
-        v_sw3_name.innerText = in_sw3_name.value = data.l3;
-        v_sw4_name.innerText = in_sw4_name.value = data.l4;
-        if (isTip) MsgBoxShowLoadingResult("获取成功！");
-      })
-      .catch(ex => {
-        if (isTip) MsgBoxShowLoadingResult("获取失败，请检查网络！" + ex.message);
-      });
-  }
-
-  btn_switchs_name_get.onclick = () => SyncSwitchName(true);
-
-  btn_switchs_name_save.onclick = () => {
-    if (in_sw1_name.value === "" ||
-      in_sw2_name.value === "" ||
-      in_sw3_name.value === "" ||
-      in_sw4_name.value === "") {
-      MsgBoxShow("开关名称设置", "设置错误，请填写开关名称！");
-      return;
-    }
-    MsgBoxShowLoading("开关名称设置", "正在设置中...");
-    fetch("/api/switchs/set-names" +
-      "?l1=" + in_sw1_name.value +
-      "&l2=" + in_sw2_name.value +
-      "&l3=" + in_sw3_name.value +
-      "&l4=" + in_sw4_name.value, { method: "get" })
-      .then(() => {
-        MsgBoxShowLoadingResult("设置成功！");
-        v_sw1_name.innerText = in_sw1_name.value
-        v_sw2_name.innerText = in_sw2_name.value
-        v_sw3_name.innerText = in_sw3_name.value
-        v_sw4_name.innerText = in_sw4_name.value
-      })
-      .catch(ex => MsgBoxShowLoadingResult("设置失败，请检查网络！" + ex.message));
-  }
-  //#endregion
-
-  //#region 触发器设置
-
-  // /* 获取触发器配置 */
-  // function TriggerConfig_Load(start) {
-  //   let root = start.parentElement.parentElement;
-  //   let in_mode = root.getElementsByClassName("in-trigger-mode")[0];
-  //   let in_name = root.getElementsByClassName("in-trigger-name")[0];
-  //   let in_target = root.getElementsByClassName("in-trigger-target")[0];
-  //   let in_action = root.getElementsByClassName("in-trigger-action")[0];
-  //   let in_false_action = root.getElementsByClassName("in-trigger-false-action")[0];
-  //   let v_name = root.parentElement.getElementsByClassName("trigger-name")[0]
-  //   let trigger_id = v_name.trigger_id;
-  //   MsgBoxShowLoading("触发器配置加载", "正在加载中...");
-  //   fetch("/api/triggers/get-config?id=" + trigger_id, { method: "get" })
-  //     .then(resp => resp.json())
-  //     .then(data => {
-  //       in_name.value = data.name;
-  //       v_name.innerText = data.name + " (L" + data.id + ")";
-  //       in_mode.selectedIndex = data.mode;
-  //       in_target.selectedIndex = data.target - 1;
-  //       in_action.value = data.action;
-  //       in_false_action.value = data.false_action;
-  //       MsgBoxShowLoadingResult("加载成功！")
-  //     })
-  //     .catch(ex => MsgBoxShowLoadingResult("加载失败，请检查网络！" + ex.message))
-  // }
   /* 保存触发器配置 */
-  function TriggerConfig_Save(start) {
+  function Trigger_Save(start) {
     let root = start.parentElement.parentElement;
     let in_mode = root.getElementsByClassName("in-trigger-mode")[0];
     let in_target = root.getElementsByClassName("in-trigger-target")[0];
@@ -946,33 +831,8 @@
       .catch(ex => MsgBoxShowLoadingResult("保存失败，请检查网络！" + ex.message))
     //alert("mode:" + mode + " target:" + target + " action:" + action + " fa:" + false_action);
   }
-  //#endregion
-
-  //#region 页面初始化数据状态同步
-  /* 同步开关值 */
-  fetch("/api/dev/datas", { method: "get" })
-    .then(resp => resp.json())
-    .then(data => {
-      in_sw1.value = data.L1;
-      v_sw1_value.innerText = CalcPwmPercent(data.L1) + "%";
-
-      in_sw2.value = data.L2;
-      v_sw2_value.innerText = CalcPwmPercent(data.L2) + "%";
-
-      if (data.L3) btn_sw3_on.checked = true;
-      else btn_sw3_off.checked = true;
-      if (data.L4) btn_sw4_on.checked = true;
-      else btn_sw4_off.checked = true;
-
-      ShowOnLineState();
-    }).catch(ex => ShowOfflineState());
-  /* 同步开关名称 */
-  SyncSwitchName();
-  //#endregion
-
   /* 加载触发器信息 */
-  let AppAccordionTriggerSetting_IsOpen = false;
-  function LoadTriggersInfo(isTip = false) {
+  function Triggers_Load(isTip = false) {
 
     if (isTip) {
       MsgBoxShowLoading("触发器信息获取", "正在获取中...");
@@ -1007,34 +867,33 @@
         MsgBoxShowLoadingResult("加载成功！");
       }).catch(ex => MsgBoxShow("触发器信息获取", "获取失败，请检查网络！" + ex.message));
   }
-
+</script>
+<!-- 定时任务-->
+<script defer="defer">
+  /* 定时任务列表容器 */
   let cron_jobs = document.getElementById("cron_jobs");
-  function getWeekDayStr(id) {
-    switch (id) {
-      case 0: return "星期日";
-      case 1: return "星期一";
-      case 2: return "星期二";
-      case 3: return "星期三";
-      case 4: return "星期四";
-      case 5: return "星期五";
-      case 6: return "星期六";
-      default: return "每天";
-    }
-  }
-  function getWeekDayId(str) {
-    switch (str) {
-      case "星期日": return 0;
-      case "星期一": return 1;
-      case "星期二": return 2;
-      case "星期三": return 3;
-      case "星期四": return 4;
-      case "星期五": return 5;
-      case "星期六": return 6;
-      case "每天": return 7;
-    }
-  }
-  /* 保存模板 */
+  /* 定时任务模板 */
   let cronJobItemTemplate = document.getElementsByClassName("cron-job")[0].innerHTML;
+  /* 周期定时任务编辑模态框 */
+  const CronJobEditModal = new bootstrap.Modal('#CronJobEditModal', {
+    keyboard: false,
+    focus: false,
+  });
+  /* 定时任务编辑模态框标题 */
+  let CronJobEditModalTitle = document.getElementById("CronJobEditModalTitle");
+  /* 周期定时任务输入控件 */
+  let in_p_cron_job_name = document.getElementById("in_p_cron_job_name");
+  let in_p_cron_job_target = document.getElementById("in_p_cron_job_target");
+  let in_p_cron_job_weekday = document.getElementById("in_p_cron_job_weekday");
+  let in_p_cron_job_time = document.getElementById("in_p_cron_job_time");
+  let in_p_cron_job_action = document.getElementById("in_p_cron_job_action");
+
+  /* 周期定时任务按钮 */
+  let btn_p_cron_job_delete = document.getElementById("btn_p_cron_job_delete");
+  let btn_p_cron_job_save = document.getElementById("btn_p_cron_job_save");
+
+  let v_cron_job_weekday = document.getElementById("v_cron_job_weekday");
+  /* 加载定时任务 */
   function CronJobs_Load(isTip) {
     if (isTip) {
       MsgBoxShowLoading("定时任务刷新", "正在刷新中...");
@@ -1052,16 +911,17 @@
               timeStr = date.toLocaleString();
             } else {
               jobTimeStr = jobTime + '';
-              timeStr = getWeekDayStr((jobTime / 10000).toFixed(0)) + ' ' + jobTimeStr.substring(1, 3) + ':' + jobTimeStr.substring(3, 5);
+              timeStr = WeekDayStrArr[(jobTime / 10000).toFixed(0)] + ' ' + jobTimeStr.substring(1, 3) + ':' + jobTimeStr.substring(3, 5);
             }
             let v_job = document.createElement("li");
             v_job.innerHTML = cronJobItemTemplate;
             v_job.onclick = () => CronJob_Edit(v_job);
             v_job.classList = 'cron-job list-group-item-action list-group-item d-flex justify-content-between align-items-start';
             v_job.getElementsByClassName("cron-job-name")[0].innerText = key;
-            v_job.getElementsByClassName("cron-job-target-name")[0].innerText = getSwitchName(job.target);
+            v_job.getElementsByClassName("cron-job-target-name")[0].innerText = Switch_GetName(job.target);
             v_job.getElementsByClassName("cron-job-time")[0].innerText = timeStr;
             v_job.getElementsByClassName("cron-job-target")[0].innerText = job.target;
+            v_job.getElementsByClassName("cron-job-action")[0].innerText = job.action;
             cron_jobs.appendChild(v_job);
             if (isTip) {
               MsgBoxShowLoadingResult("定时任务刷新", "刷新成功！");
@@ -1071,15 +931,162 @@
         .catch(ex => isTip ? MsgBoxShowLoadingResult("定时任务刷新", "刷新成功！") :
           MsgBoxShow("加载定时任务", "加载失败，请检查网络！" + ex.message)));
   }
-  CronJobs_Load();
+  /* 周期定时任务 编辑事件处理函数 */
+  function CronJob_Edit(v_job) {
+
+    btn_p_cron_job_delete.style.display = '';
+    v_name = v_job.getElementsByClassName("cron-job-name")[0];
+    v_target = v_job.getElementsByClassName("cron-job-target")[0];
+    v_time = v_job.getElementsByClassName("cron-job-time")[0];
+    v_action = v_job.getElementsByClassName("cron-job-action")[0];
+
+    let isPeriodicMode = v_time.innerText.length <= 9;
+
+    CronJobEditModalTitle.innerText =
+      (isPeriodicMode ? "周期" : "一次性") + "定时任务编辑";
 
 
+    in_p_cron_job_name.value = v_name.innerText;
+    /* 禁止修改任务名称 */
+    in_p_cron_job_name.disabled = true;
+    /* 更新按钮名称 */
+    in_p_cron_job_target.innerHTML =
+      '<option value="1">' + Switch_GetName(1) + '</option>' +
+      '<option value="2">' + Switch_GetName(2) + '</option>' +
+      '<option value="3">' + Switch_GetName(3) + '</option>' +
+      '<option value="4">' + Switch_GetName(4) + '</option>';
+    in_p_cron_job_target.selectedIndex = parseInt(v_target.innerText) - 1;
+    let timeStr = v_time.innerText;
+    /* 周期任务时间UI */
+    if (isPeriodicMode) {
+      v_cron_job_weekday.style.display = "";
+      in_p_cron_job_weekday.style.display = "";
+      v_cron_job_weekday.parentElement.classList.add("mt-2");
+      in_p_cron_job_weekday.selectedIndex = getWeekDayId(timeStr.substring(0, timeStr.indexOf(" ")));
+      in_p_cron_job_time.type = "time";
+      in_p_cron_job_time.value = timeStr.substring(timeStr.indexOf(" ") + 1);
+    }
+    /* 一次性任务时间UI */
+    else {
+      v_cron_job_weekday.style.display = "none";
+      in_p_cron_job_weekday.style.display = "none";
+      v_cron_job_weekday.parentElement.classList.remove("mt-2");
+      in_p_cron_job_time.type = "datetime-local";
+      in_p_cron_job_time.value = new Date(timeStr).format("yyyy-MM-dd hh:mm");
+    }
+
+
+    in_p_cron_job_action.value = v_action.innerText;
+
+    btn_p_cron_job_delete.onclick = () => {
+      MsgBoxShowLoading("定时任务删除", "正在删除中...");
+      fetch("/api/cron-jobs/delete?name=" + v_name.innerText, { method: "get" })
+        .then(resp => resp.json())
+        .then(data => {
+          /* 移除CronJob */
+          cron_jobs.removeChild(v_job);
+          MsgBoxShowLoadingResult("删除成功！");
+        }).catch(ex => MsgBoxShowLoadingResult("删除失败！" + ex.message));
+    };
+    btn_p_cron_job_save.onclick = () => {
+      /* 参数检查 */
+      if (in_p_cron_job_time.value == ""
+        || in_p_cron_job_action.value == "") {
+        MsgBoxShow("定时任务更新", "参数错误！");
+        return;
+      }
+      MsgBoxShowLoading("定时任务更新", "正在更新中...");
+      fetch("/api/cron-jobs/update" +
+        "?name=" + in_p_cron_job_name.value +
+        "&target=" + in_p_cron_job_target.value +
+        "&time=" + (isPeriodicMode ?
+          (in_p_cron_job_weekday.value + in_p_cron_job_time.value.replace(':', ''))
+          : new Date(in_p_cron_job_time.value).getTime() / 1000) +
+        "&action=" + in_p_cron_job_action.value, { method: "get" })
+        .then(resp => resp.json())
+        .then(data => {
+          /* 同步任务列表UI */
+          CronJobs_Load();
+          // v_target.innerText = in_p_cron_job_target.options[in_p_cron_job_target.selectedIndex].value;
+          // v_time.innerText = in_p_cron_job_weekday.options[in_p_cron_job_weekday.selectedIndex].innerText + " " + in_p_cron_job_time.value;
+          // v_action.innerText = in_p_cron_job_action.value;
+          MsgBoxShowLoadingResult("更新成功！");
+        })
+        .catch(ex => {
+          MsgBoxShowLoadingResult("更新失败！" + ex.message);
+        })
+    };
+    CronJobEditModal.show();
+
+
+  }
+  /* 周期定时任务 创建处理函数 */
+  function CronJob_Create(isPeriodicMode) {
+    /* 写入默认设置 */
+    CronJobEditModalTitle.innerText =
+      (isPeriodicMode ? "周期" : "一次性") + "定时任务添加";
+
+    in_p_cron_job_name.value = "";
+    in_p_cron_job_name.disabled = false;
+    in_p_cron_job_action.value = "无";
+    in_p_cron_job_target.selectedIndex = 0;
+    /* 周期任务时间UI */
+    if (isPeriodicMode) {
+      in_p_cron_job_weekday.style.display = "";
+      v_cron_job_weekday.style.display = "";
+      v_cron_job_weekday.parentElement.classList.add("mt-2");
+      in_p_cron_job_weekday.selectedIndex = 7;
+      in_p_cron_job_time.type = "time";
+      in_p_cron_job_time.value = new Date().format("hh:mm");
+    }
+    /* 一次性任务时间UI */
+    else {
+      in_p_cron_job_weekday.style.display = "none";
+      v_cron_job_weekday.style.display = "none";
+      v_cron_job_weekday.parentElement.classList.remove("mt-2");
+      in_p_cron_job_time.type = "datetime-local";
+      in_p_cron_job_time.value = new Date().format("yyyy-MM-dd hh:mm");
+    }
+    /* 隐藏删除按钮 */
+    btn_p_cron_job_delete.style.display = 'none';
+    /* 设置点击事件 */
+    btn_p_cron_job_save.onclick = () => {
+      /* 参数检查 */
+      if (in_p_cron_job_name.value == ""
+        || in_p_cron_job_time.value == ""
+        || in_p_cron_job_action.value == "") {
+        MsgBoxShow("定时任务添加", "参数错误！");
+        return;
+      }
+      MsgBoxShowLoading("定时任务添加", "正在添加中...");
+      fetch("/api/cron-jobs/create" +
+        "?name=" + in_p_cron_job_name.value +
+        "&target=" + in_p_cron_job_target.options[in_p_cron_job_target.selectedIndex].value +
+        "&time=" + (isPeriodicMode
+          ? (in_p_cron_job_weekday.value + in_p_cron_job_time.value.replace(':', ''))
+          : new Date(in_p_cron_job_time.value).getTime() / 1000) +
+        "&action=" + in_p_cron_job_action.value, { method: "get" })
+        .then(resp => resp.json())
+        .then(data => {
+          if (data.code == -1) {
+            MsgBoxShowLoadingResult("更新失败！" + data.msg);
+            return;
+          }
+          /* 重新加载定时任务列表 */
+          CronJobs_Load();
+          MsgBoxShowLoadingResult("添加成功！");
+        })
+        .catch(ex => MsgBoxShowLoadingResult("更新失败！" + ex.message));
+    };
+    CronJobEditModal.show();
+  }
 </script>
-<datalist id="switchValueList">
-  <option value="打开">
-  <option value="关闭">
-  <option value="反转">
-  <option value="无">
-</datalist>
+
+<!-- APP 初始化代码 -->
+<script defer="defer">
+  Switchs_SyncStatus();
+  Switchs_SyncConfig();
+  CronJobs_Load();
+</script>
 
 </html>

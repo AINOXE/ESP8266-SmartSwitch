@@ -42,7 +42,7 @@ void WebServer_Init()
             return;
         }
         int id = WebServer.arg("id").toInt();
-        Serial.printf("id=%d\n", id);
+        // Serial.printf("id=%d\n", id);
         /* 通道检查 */
         if (id < 0 || id > 4)
         {
@@ -50,7 +50,6 @@ void WebServer_Init()
             WebServer.send(200, CONTENT_TYPE_JSON, result_buf);
             return;
         }
-        Serial.println("id check success");
         String valueStr = WebServer.arg("value");
         Serial.printf("value=%s\n", valueStr.c_str());
 
@@ -111,6 +110,7 @@ void WebServer_Init()
         int mode = WebServer.arg("mode").toInt();
         int target = WebServer.arg("target").toInt();
         String action = WebServer.arg("action");
+        action.replace(' ','+');
         String false_action = WebServer.arg("false_action");
 
         JsonObject trigger = SystemConfig["triggers"][id - 1];
@@ -122,34 +122,41 @@ void WebServer_Init()
         SystemConfig_Save();
         WebServer.send(200, CONTENT_TYPE_JSON, WEB_RESULT_SUCCESS_JSON);
     });
-    /* 设置开关名称API */
-    MapUri("/api/switchs/set-names", HTTP_GET)
+    /* 设置开关配置API */
+    MapUri("/api/switchs/set-config", HTTP_GET)
     {
         String l1 = WebServer.arg("l1");
         String l2 = WebServer.arg("l2");
         String l3 = WebServer.arg("l3");
         String l4 = WebServer.arg("l4");
 
-        JsonObject switchs_name = SystemConfig["switchs_name"];
-        switchs_name["l1"] = l1;
-        switchs_name["l2"] = l2;
-        switchs_name["l3"] = l3;
-        switchs_name["l4"] = l4;
+        int pwm_freq = WebServer.arg("pwm_freq").toInt();
+        int pwm_step = WebServer.arg("pwm_step").toInt();
+        ;
+
+        JsonObject switchs_config = SystemConfig["switchs_config"];
+        switchs_config["l1"] = l1;
+        switchs_config["l2"] = l2;
+        switchs_config["l3"] = l3;
+        switchs_config["l4"] = l4;
+
+        switchs_config["pwm_freq"] = pwm_freq;
+        switchs_config["pwm_step"] = pwm_step;
+        analogWriteFreq(pwm_freq);
+        analogWriteRange(pwm_step);
+
         SystemConfig_Save();
-        Serial.printf("开关名称设置API: \n\tL1=%s\n\tL2=%s\n\tL3=%s\n\tL4=%s\n",
-                      l1.c_str(), l2.c_str(), l3.c_str(), l4.c_str());
+        Serial.printf("开关设置API: \n\tPWM Freq:%d Step:%d\n\tL1=%s\n\tL2=%s\n\tL3=%s\n\tL4=%s\n",
+                      pwm_freq, pwm_step,
+                      l1.c_str(), l2.c_str(),
+                      l3.c_str(), l4.c_str());
         WebServer.send(200, CONTENT_TYPE_JSON, WEB_RESULT_SUCCESS_JSON);
     });
-    /* 获取开关名称API */
-    MapUri("/api/switchs/get-names", HTTP_GET)
+    /* 获取开关配置API */
+    MapUri("/api/switchs/get-config", HTTP_GET)
     {
-        char buf[256];
-        JsonObject switchs_name = SystemConfig["switchs_name"];
-        sprintf(buf, "{\"l1\":\"%s\",\"l2\":\"%s\",\"l3\":\"%s\",\"l4\":\"%s\"}",
-                switchs_name["l1"].as<String>().c_str(),
-                switchs_name["l2"].as<String>().c_str(),
-                switchs_name["l3"].as<String>().c_str(),
-                switchs_name["l4"].as<String>().c_str());
+        char buf[1000];
+        serializeJsonPretty(SystemConfig["switchs_config"], buf, 1000);
         WebServer.send(200, CONTENT_TYPE_JSON, buf);
     });
     /* 添加定时任务API */
@@ -215,7 +222,7 @@ void WebServer_Init()
     MapUri("/api/cron-jobs/get-all", HTTP_GET)
     {
         char *buf = (char *)malloc(2048);
-        serializeJsonPretty(SystemConfig["cron_jobs"], buf,2048);
+        serializeJsonPretty(SystemConfig["cron_jobs"], buf, 2048);
         WebServer.send(200, CONTENT_TYPE_JSON, buf);
         free(buf);
     });

@@ -14,8 +14,8 @@ extern bool SystemConfigLock;
     "\"version\": 2,"                                                                                   \
     "\"admin_account\": \"admin\","                                                                     \
     "\"admin_password\": \"02130213\","                                                                 \
-    "\"wifi_ssid\": \".inet\","                                                                            \
-    "\"wifi_password\": \"123456890\","                                                                  \
+    "\"wifi_ssid\": \".v\","                                                                            \
+    "\"wifi_password\": \"02130213\","                                                                  \
     "\"wifi_sta_ip\": null,"                                                                            \
     "\"wifi_sta_mask\": null,"                                                                          \
     "\"wifi_sta_gt\": null,"                                                                            \
@@ -26,14 +26,16 @@ extern bool SystemConfigLock;
     "{\"id\":2,\"name\":\"触发器2\",\"mode\":1,\"target\":1,\"action\":null,\"false_action\":null}," \
     "{\"id\":3,\"name\":\"触发器3\",\"mode\":1,\"target\":1,\"action\":null,\"false_action\":null}"  \
     "],"                                                                                                \
-    "\"switchs_name\": {"                                                                               \
+    "\"switchs_config\": {"                                                                             \
+    "\"pwm_freq\":1000,"                                                                                \
+    "\"pwm_step\":1000,"                                                                                \
     "\"l1\":\"通道1\","                                                                               \
     "\"l2\":\"通道2\","                                                                               \
     "\"l3\":\"通道3\","                                                                               \
     "\"l4\":\"通道4\""                                                                                \
     "},"                                                                                                \
-    "\"cron_jobs\":{"                                                                                    \
-    "   \"测试任务\": {\"time\":42238,\"target\":4,\"action\":\"打开\",\"exec\":0}"          \
+    "\"cron_jobs\":{"                                                                                   \
+    "   \"测试任务\": {\"time\":42238,\"target\":4,\"action\":\"打开\",\"exec\":0}"               \
     "}"                                                                                                 \
     "}";
 

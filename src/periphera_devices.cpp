@@ -90,7 +90,7 @@ int SwitchControl(int id, int value, bool isAppend = false)
         /* 反转 */
         if (newValue == -1)
         {
-            newValue = DevicesData.L1 == 0 ? 1023 : 0;
+            newValue = DevicesData.L1 == 0 ? DevicesData.PwmStep : 0;
             analogWrite(pin, newValue);
             DevicesData.L1 = newValue;
         }
@@ -99,8 +99,8 @@ int SwitchControl(int id, int value, bool isAppend = false)
         {
             newValue = DevicesData.L1 + newValue;
 
-            if (newValue > 1023)
-                newValue = 1023;
+            if (newValue > DevicesData.PwmStep)
+                newValue = DevicesData.PwmStep;
             else if (newValue < 0)
                 newValue = 0;
             analogWrite(pin, newValue);
@@ -120,7 +120,7 @@ int SwitchControl(int id, int value, bool isAppend = false)
         /* 反转 */
         if (newValue == -1)
         {
-            newValue = DevicesData.L2 == 0 ? 1023 : 0;
+            newValue = DevicesData.L2 == 0 ? DevicesData.PwmStep : 0;
             analogWrite(pin, newValue);
             DevicesData.L2 = newValue;
         }
@@ -128,8 +128,8 @@ int SwitchControl(int id, int value, bool isAppend = false)
         else if (isAppend)
         {
             newValue = DevicesData.L2 + newValue;
-            if (newValue > 1023)
-                newValue = 1023;
+            if (newValue > DevicesData.PwmStep)
+                newValue = DevicesData.PwmStep;
             else if (newValue < 0)
                 newValue = 0;
             analogWrite(pin, newValue);
@@ -163,7 +163,7 @@ int SwitchControl(int id, int value, bool isAppend = false)
         /* 直接赋值 */
         /* 取消重复操作 */
         else if (DevicesData.L4 == newValue)
-            return 1; 
+            return 1;
         digitalWrite(pin, newValue ? RELAY_OPEN : RELAY_CLOSE);
         DevicesData.L4 = newValue;
         break;
@@ -232,6 +232,9 @@ void PeripheralDevices_Init()
     DevicesData.T2 = 0;
     DevicesData.T3 = 0;
 
+    DevicesData.PwmFreq = SystemConfig["switchs_config"]["pwm_freq"];
+    DevicesData.PwmStep = SystemConfig["switchs_config"]["pwm_step"];
+
     /* 初始化L1,L2,L3,L4 */
     pinMode(D1, OUTPUT);
     pinMode(D2, OUTPUT);
@@ -241,6 +244,10 @@ void PeripheralDevices_Init()
     pinMode(D0, INPUT);
     pinMode(D8, INPUT);
     pinMode(A0, INPUT);
+    Serial.printf("PWM初始化中... Freq:%d  Step:%d\n", DevicesData.PwmFreq, DevicesData.PwmStep);
+
+    analogWriteFreq(DevicesData.PwmFreq);
+    analogWriteRange(DevicesData.PwmStep);
 
     /* 复位开关值 */
     analogWrite(D1, 0);
