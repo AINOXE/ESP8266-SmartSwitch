@@ -662,6 +662,7 @@
     }
 
     ShowLoadingState("设 置 中");
+    Switchs_SyncStatusENC = 1;
     fetch("/api/switchs/control" +
       "?id=" + channel +
       "&value=" + value, { method: "get" })
@@ -674,7 +675,12 @@
       });
   }
   /* 同步所有按钮状态 */
+  let Switchs_SyncStatusENC = 0;
   function Switchs_SyncStatus() {
+    if (Switchs_SyncStatusENC) {
+      Switchs_SyncStatusENC--;
+      return;
+    }
     fetch("/api/dev/datas", { method: "get" })
       .then(resp => resp.json())
       .then(data => {
@@ -1087,6 +1093,9 @@
   Switchs_SyncStatus();
   Switchs_SyncConfig();
   CronJobs_Load();
+
+  /* 三秒同步一次按钮状态 */
+  setInterval(() => Switchs_SyncStatus(), 3000);
 </script>
 
 </html>
